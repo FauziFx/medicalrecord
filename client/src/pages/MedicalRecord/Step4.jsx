@@ -317,7 +317,7 @@ export function Step4({ dataOptic }) {
             type="button"
             className="btn btn-sm join-item w-1/2 btn-soft"
             onClick={() => setStep(3)}
-            // disabled={isLoading}
+            disabled={isLoading}
           >
             « Back
           </button>
@@ -325,7 +325,7 @@ export function Step4({ dataOptic }) {
             type="submit"
             className="btn btn-sm join-item w-1/2 btn-primary"
             onClick={() => handleSubmit()}
-            // disabled={isLoading}
+            disabled={isLoading}
           >
             {isLoading ? (
               <span className="loading loading-sm loading-spinner"></span>
