@@ -6,10 +6,16 @@ import { Login } from "@/pages/auth";
 import Protected from "@/utils/Protected";
 import NotFound from "@/pages/NotFound";
 
+import Cookies from "js-cookie";
+
 const App = () => {
+  const token = Cookies.get("token") ? true : false;
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route
+        path="/"
+        element={<Navigate to={token ? "/dashboard" : "/login"} replace />}
+      />
       <Route path="/login" element={<Protected />}>
         <Route path="" element={<Login />} />
       </Route>
