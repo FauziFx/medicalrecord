@@ -1,0 +1,46 @@
+@import "tailwindcss";
+@plugin "daisyui" {
+  themes: light --default;
+}
+* {
+  font-family: "Inter", sans-serif;
+  font-optical-sizing: auto;
+}
+.drawer-overlay {
+  background-color: rgb(0 0 0 / 15%) !important;
+}
+html {
+  background-color: #f3f4f6;
+}
+input[type="date"] {
+  position: relative;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: auto;
+  height: auto;
+  color: transparent;
+  background: transparent;
+}
+
+.Toastify__toast {
+  font-size: 14px;
+  color: rgb(41, 41, 41);
+}
+
+.swal2-title {
+  font-size: 1.5rem;
+}
+
+.swal2-styled {
+  font-size: 0.8rem;
+}
+
+img:where(.swal2-image) {
+  height: 80vh;
+}
