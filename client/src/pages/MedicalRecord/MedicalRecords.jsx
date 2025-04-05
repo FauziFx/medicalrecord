@@ -324,7 +324,7 @@ export function MedicalRecords() {
                 )
               )
             ) : (
-              <LoadingTable row="10" colspan="7" />
+              <LoadingTable row="10" colspan="8" />
             )}
           </tbody>
         </table>
