@@ -24,6 +24,8 @@ const userRouter = require("./routes/user.routes");
 const warrantyRouter = require("./routes/warranty.routes");
 const dashboardRouter = require("./routes/dashboard.routes");
 
+const categoriesRouter = require("./routes/categories.routes");
+
 const optic = require("./controllers/optic.controller");
 
 const app = express();
@@ -68,12 +70,16 @@ app.get("/v1/optic", optic.get);
 app.use(Authenticate);
 
 // Protected Route
+// Medical Record
 app.use("/v1/optic", CheckInputs, opticRouter);
 app.use("/v1/patient", CheckInputs, patientRouter);
 app.use("/v1/medicalrecord", CheckInputs, medicalRecordRouter);
 app.use("/v1/user", CheckInputs, userRouter);
 app.use("/v1/medicalcondition", medicalConditionRouter);
 app.use("/v1/dashboard", dashboardRouter);
+
+// Backoffice & POS
+app.use("/v1/categories", CheckInputs, categoriesRouter);
 
 // error handler
 app.use(ErrorHandler);
