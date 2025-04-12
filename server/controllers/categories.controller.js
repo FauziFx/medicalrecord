@@ -38,6 +38,16 @@ self.get = async (req, res, next) => {
     // Query untuk mendapatkan data pasien dengan pagination
     const response = await Category.findAll({
       where: whereCondition,
+      include: [
+        {
+          model: Category,
+          as: "subCategories",
+        },
+        {
+          model: Category,
+          as: "parent",
+        },
+      ],
     });
 
     res.status(200).json({
