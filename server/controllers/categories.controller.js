@@ -99,6 +99,13 @@ self.delete = async (req, res, next) => {
     }
 
     await checkData.destroy();
+
+    await Category.destroy({
+      where: {
+        parentId: id,
+      },
+    });
+
     res.status(200).json({
       success: true,
       message: "Category Deleted Successfully",
