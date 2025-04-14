@@ -113,6 +113,17 @@ self.delete = async (req, res, next) => {
       });
     }
 
+    const associatedProduct = await Product.findAll({
+      where: { categoryId: id },
+    });
+
+    if (associatedProduct.length > 0) {
+      return res.json({
+        success: false,
+        message: "Category cannot be deleted because it has relationships",
+      });
+    }
+
     await checkData.destroy();
 
     await Category.destroy({
