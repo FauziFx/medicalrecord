@@ -1,8 +1,5 @@
 const { Product, Category, Variant, Sequelize } = require("../models");
-const fs = require("fs");
 const Op = Sequelize.Op;
-const fn = Sequelize.fn;
-const col = Sequelize.col;
 
 let self = {};
 
@@ -56,6 +53,82 @@ self.get = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+};
+
+self.create = async (req, res, next) => {
+  try {
+    const { name, categoryId, status, description, base_price, variants } =
+      req.body;
+
+    // 1. Simpan product dulu
+    const newProduct = await Product.create({
+      name,
+      categoryId,
+      description,
+      status,
+      base_price,
+    });
+
+    // 2. Siapkan variants dengan SKU
+    const variantsWithSku = variants.map((v, index) => ({
+      ...v,
+      productId: newProduct.id,
+      sku: generateSku(categoryId, newProduct.id, index),
+    }));
+
+    // 3. Simpan semua variants
+    await Variant.bulkCreate(variantsWithSku);
+
+    res.status(201).json({
+      success: true,
+      message: "Product & variants Created",
+      data: newProduct,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+self.getById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const response = await Product.findByPk(id, {
+      include: [
+        {
+          model: Category,
+          attributes: ["name"],
+          as: "categories",
+        },
+        {
+          model: Variant,
+          as: "variants",
+        },
+      ],
+    });
+
+    if (!response) {
+      return res.status(400).json({
+        success: false,
+        message: "User not found!",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Data found",
+      data: response,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const generateSku = (categoryId, productId, index) => {
+  const categoryCode = String(categoryId).padStart(2, "0");
+  const productCode = String(productId).padStart(3, "0");
+  const indexCode = String(index).padStart(3, "0");
+
+  return `SKU-CAT${categoryCode}-${productCode + indexCode}`;
 };
 
 module.exports = self;
