@@ -123,6 +123,34 @@ self.getById = async (req, res, next) => {
   }
 };
 
+self.updateStatus = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    // Check User
+    const checkUser = await Product.findByPk(id);
+    if (!checkUser) {
+      return res.status(400).json({
+        success: false,
+        message: "User not found!",
+      });
+    }
+
+    // Update User
+    await checkUser.update({
+      status,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Status updated successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const generateSku = (categoryId, productId, index) => {
   const categoryCode = String(categoryId).padStart(2, "0");
   const productCode = String(productId).padStart(3, "0");
