@@ -81,7 +81,7 @@ app.use("/v1/dashboard", dashboardRouter);
 
 // Backoffice & POS
 app.use("/v1/categories", CheckInputs, categoriesRouter);
-app.use("/v1/products", CheckInputs, productsRouter);
+app.use("/v1/products", productsRouter);
 
 // error handler
 app.use(ErrorHandler);
