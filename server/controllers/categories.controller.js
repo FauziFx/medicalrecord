@@ -1,6 +1,8 @@
-const { Category, Sequelize } = require("../models");
+const { Category, Product, Sequelize } = require("../models");
 const fs = require("fs");
 const Op = Sequelize.Op;
+const fn = Sequelize.fn;
+const col = Sequelize.col;
 
 let self = {};
 
@@ -37,17 +39,30 @@ self.get = async (req, res, next) => {
 
     // Query untuk mendapatkan data pasien dengan pagination
     const response = await Category.findAll({
-      where: whereCondition,
+      attributes: [
+        "id",
+        "name",
+        "parentId",
+        [fn("COUNT", col("products.id")), "totalProducts"], // Total produk
+      ],
       include: [
         {
           model: Category,
-          as: "subCategories",
+          as: "parent",
+          attributes: ["id", "name"], // Relasi parent
         },
         {
           model: Category,
-          as: "parent",
+          as: "subCategories",
+          attributes: ["id", "name"], // Relasi subcategories
+        },
+        {
+          model: Product,
+          as: "products",
+          attributes: [], // Tidak perlu atribut produk
         },
       ],
+      group: ["Category.id", "subCategories.id"],
     });
 
     res.status(200).json({

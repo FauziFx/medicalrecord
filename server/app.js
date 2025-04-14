@@ -25,6 +25,7 @@ const warrantyRouter = require("./routes/warranty.routes");
 const dashboardRouter = require("./routes/dashboard.routes");
 
 const categoriesRouter = require("./routes/categories.routes");
+const productsRouter = require("./routes/products.routes");
 
 const optic = require("./controllers/optic.controller");
 
@@ -80,6 +81,7 @@ app.use("/v1/dashboard", dashboardRouter);
 
 // Backoffice & POS
 app.use("/v1/categories", CheckInputs, categoriesRouter);
+app.use("/v1/products", CheckInputs, productsRouter);
 
 // error handler
 app.use(ErrorHandler);
