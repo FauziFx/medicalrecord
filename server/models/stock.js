@@ -1,7 +1,7 @@
 "use strict";
 const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
-  class Variant extends Model {
+  class Stock extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -9,31 +9,32 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      Variant.belongsTo(models.Product, {
+      Stock.belongsTo(models.Product, {
         foreignKey: "productId",
         as: "product",
       });
-
-      Variant.hasMany(models.Stock, {
+      Stock.belongsTo(models.Variant, {
         foreignKey: "variantId",
-        as: "StockAdjustments",
+        as: "variant",
       });
     }
   }
-  Variant.init(
+  Stock.init(
     {
-      sku: DataTypes.STRING,
-      name: DataTypes.STRING,
-      stock: DataTypes.INTEGER,
-      minimum_stock: DataTypes.INTEGER,
-      price: DataTypes.INTEGER,
-      track_stock: DataTypes.INTEGER,
       productId: DataTypes.INTEGER,
+      productName: DataTypes.STRING,
+      variantId: DataTypes.INTEGER,
+      variantName: DataTypes.STRING,
+      type: DataTypes.ENUM("in", "out", "adjust"),
+      before_stock: DataTypes.INTEGER,
+      adjust: DataTypes.INTEGER,
+      after_stock: DataTypes.INTEGER,
+      note: DataTypes.STRING,
     },
     {
       sequelize,
-      modelName: "Variant",
+      modelName: "Stock",
     }
   );
-  return Variant;
+  return Stock;
 };
