@@ -151,6 +151,72 @@ self.updateStatus = async (req, res, next) => {
   }
 };
 
+self.update = async (req, res, next) => {
+  const { id } = req.params;
+  const {
+    name,
+    categoryId,
+    status,
+    description,
+    base_price,
+    updatedVariants,
+    newVariants,
+    deletedVariantIds,
+  } = req.body;
+
+  try {
+    // 1. Update product data
+    await Product.update(
+      { name, categoryId, status, description, base_price },
+      { where: { id } }
+    );
+
+    // 2. Delete variants that were removed
+    if (deletedVariantIds?.length) {
+      await Variant.destroy({
+        where: { id: deletedVariantIds, productId: id },
+      });
+    }
+
+    // 3. Update existing variants
+    for (const variant of updatedVariants) {
+      const { id: variantId, ...rest } = variant;
+      await Variant.update(rest, { where: { id: variantId, productId: id } });
+    }
+
+    // 4. Ambil semua SKU yang masih ada setelah update & delete
+    const existingVariants = await Variant.findAll({
+      where: { productId: id },
+      attributes: ["sku"],
+    });
+
+    // 5. Cari last index dari SKU lama
+    const lastSkuIndex = existingVariants.length
+      ? Math.max(
+          ...existingVariants.map((v) => parseInt(v.sku?.slice(-3)) || 0)
+        )
+      : 0;
+
+    // 6. Generate SKU & buat variant baru
+    const variantsToCreate = newVariants.map((v, i) => ({
+      ...v,
+      productId: id,
+      sku: generateSku(categoryId, id, lastSkuIndex + i + 1),
+    }));
+
+    // 7. Bulk create new variants
+    if (variantsToCreate.length) {
+      await Variant.bulkCreate(variantsToCreate);
+    }
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Product updated successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const generateSku = (categoryId, productId, index) => {
   const categoryCode = String(categoryId).padStart(2, "0");
   const productCode = String(productId).padStart(3, "0");
