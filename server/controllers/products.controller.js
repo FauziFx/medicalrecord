@@ -5,11 +5,7 @@ let self = {};
 
 self.get = async (req, res, next) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 15;
-    const offset = (page - 1) * limit;
-
-    const { name, categoryId, status } = req.query;
+    const { name, categoryId, status, all } = req.query;
 
     const whereCondition = {};
 
@@ -29,17 +25,39 @@ self.get = async (req, res, next) => {
       }
     }
 
+    let limit, offset;
+    const isAll = all === "true" || all === true;
+
+    if (!isAll) {
+      const page = parseInt(req.query.page) || 1;
+      limit = parseInt(req.query.limit) || 15;
+      offset = (page - 1) * limit;
+    }
+
     const { count, rows } = await Product.findAndCountAll({
-      include: [
-        {
-          model: Category,
-          attributes: ["name"],
-          as: "categories",
-        },
-      ],
+      attributes: isAll
+        ? ["id", "name"]
+        : [
+            "id",
+            "name",
+            "base_price",
+            "description",
+            "categoryId",
+            "status",
+            "createdAt",
+            "updatedAt",
+          ],
+      include: isAll
+        ? []
+        : [
+            {
+              model: Category,
+              attributes: ["name"],
+              as: "categories",
+            },
+          ],
       where: whereCondition,
-      limit,
-      offset,
+      ...(isAll ? {} : { limit, offset }),
     });
 
     res.status(200).json({
@@ -47,8 +65,8 @@ self.get = async (req, res, next) => {
       message: "Data Product found",
       data: rows,
       totalData: count,
-      totalPages: Math.ceil(count / limit),
-      currentPage: page,
+      totalPages: isAll ? 1 : Math.ceil(count / limit),
+      currentPage: isAll ? 1 : parseInt(req.query.page) || 1,
     });
   } catch (error) {
     next(error);
