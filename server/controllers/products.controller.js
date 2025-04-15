@@ -217,6 +217,32 @@ self.update = async (req, res, next) => {
   }
 };
 
+self.delete = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    // Check Product
+    const checkProduct = await Product.findByPk(id);
+    if (!checkProduct) {
+      return res.status(400).json({
+        success: false,
+        message: "Product not found!",
+      });
+    }
+
+    await Variant.destroy({
+      where: { productId: id },
+    });
+    await checkProduct.destroy();
+    res.status(200).json({
+      success: true,
+      message: "Product Deleted!",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const generateSku = (categoryId, productId, index) => {
   const categoryCode = String(categoryId).padStart(2, "0");
   const productCode = String(productId).padStart(3, "0");
