@@ -110,6 +110,13 @@ self.create = async (req, res, next) => {
 self.getById = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const { adjustment = false } = req.query;
+
+    const whereVariant = {};
+    if (adjustment) {
+      whereVariant.track_stock = 1;
+    }
+
     const response = await Product.findByPk(id, {
       include: [
         {
@@ -120,6 +127,7 @@ self.getById = async (req, res, next) => {
         {
           model: Variant,
           as: "variants",
+          where: whereVariant,
         },
       ],
     });
