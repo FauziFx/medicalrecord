@@ -18,6 +18,11 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "variantId",
         as: "StockAdjustments",
       });
+
+      Variant.hasMany(models.TransactionDetail, {
+        foreignKey: "variantId",
+        as: "transactionDetails",
+      });
     }
   }
   Variant.init(
