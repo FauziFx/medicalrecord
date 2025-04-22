@@ -5,7 +5,7 @@ let self = {};
 
 self.get = async (req, res, next) => {
   try {
-    const { name, categoryId, status, all } = req.query;
+    const { name, categoryId, status = 1, all } = req.query;
 
     const whereCondition = {};
 
@@ -128,6 +128,7 @@ self.getById = async (req, res, next) => {
           model: Variant,
           as: "variants",
           where: whereVariant,
+          order: [["name", "ASC"]],
         },
       ],
     });
