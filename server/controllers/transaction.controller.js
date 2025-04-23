@@ -8,48 +8,79 @@ const {
   sequelize,
 } = require("../models");
 
+const { Op, fn, col } = Sequelize;
+
 let self = {};
 
-// self.get = async (req, res) => {
-//   try {
-//     const transactions = await Transaction.findAll({
-//       include: [
-//         { model: Customer, as: "customer" },
-//         { model: TransactionType, as: "transactionType" },
-//       ],
-//       order: [["date", "DESC"]],
-//     });
-//     res.json(transactions);
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ message: "Failed to retrieve transactions." });
-//   }
-// };
+self.get = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 15;
+    const offset = (page - 1) * limit;
 
-// // GET /transactions/:id
-// self.getById = async (req, res) => {
-//   try {
-//     const transaction = await Transaction.findByPk(req.params.id, {
-//       include: [
-//         { model: Customer, as: "customer" },
-//         { model: TransactionType, as: "transactionType" },
-//         { model: TransactionDetail, as: "details" },
-//       ],
-//     });
+    const { search, startDate, endDate } = req.query;
 
-//     if (!transaction) {
-//       return res.status(404).json({ message: "Transaction not found." });
-//     }
+    const where = {};
 
-//     res.json(transaction);
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ message: "Failed to get transaction." });
-//   }
-// };
+    if (search) {
+      where.receipt_no = { [Op.like]: `%${search}%` };
+    }
+
+    if (startDate && endDate) {
+      where.date = {
+        [Op.between]: [new Date(startDate), new Date(endDate)],
+      };
+    }
+
+    const { rows, count } = await Transaction.findAndCountAll({
+      include: [
+        { model: Customer, as: "customer" },
+        { model: TransactionType, as: "transactionType" },
+      ],
+      where,
+      order: [["date", "DESC"]],
+      limit,
+      offset,
+    });
+
+    res.status(200).json({
+      success: true,
+      data: rows,
+      total: count,
+      currentPage: page,
+      totalPages: Math.ceil(count / limit),
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// GET /transactions/:id
+self.getById = async (req, res, next) => {
+  try {
+    const transaction = await Transaction.findByPk(req.params.id, {
+      include: [
+        { model: Customer, as: "customer" },
+        { model: TransactionType, as: "transactionType" },
+        { model: TransactionDetail, as: "details" },
+      ],
+    });
+
+    if (!transaction) {
+      return res.status(404).json({ message: "Transaction not found." });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: transaction,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 
 // POST /transactions
-self.create = async (req, res) => {
+self.create = async (req, res, next) => {
   const t = await sequelize.transaction();
 
   try {
@@ -120,8 +151,7 @@ self.create = async (req, res) => {
     });
   } catch (err) {
     await t.rollback();
-    console.error(err);
-    res.status(500).json({ message: "Failed to create transaction." });
+    next(err);
   }
 };
 
