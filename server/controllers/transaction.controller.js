@@ -12,18 +12,30 @@ const { Op, fn, col } = Sequelize;
 
 let self = {};
 
-self.get = async (req, res) => {
+self.get = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 15;
     const offset = (page - 1) * limit;
 
-    const { search, startDate, endDate } = req.query;
+    const { search, typeId, startDate, endDate, detail = false } = req.query;
 
     const where = {};
 
     if (search) {
       where.receipt_no = { [Op.like]: `%${search}%` };
+    }
+
+    if (typeId) {
+      where.transactionTypeId = typeId;
+    }
+
+    let includes = [
+      { model: Customer, as: "customer" },
+      { model: TransactionType, as: "transactionType" },
+    ];
+    if (detail) {
+      includes.push({ model: TransactionDetail, as: "details" });
     }
 
     if (startDate && endDate) {
@@ -33,11 +45,9 @@ self.get = async (req, res) => {
     }
 
     const { rows, count } = await Transaction.findAndCountAll({
-      include: [
-        { model: Customer, as: "customer" },
-        { model: TransactionType, as: "transactionType" },
-      ],
+      include: includes,
       where,
+      distinct: true,
       order: [["date", "DESC"]],
       limit,
       offset,
@@ -46,9 +56,9 @@ self.get = async (req, res) => {
     res.status(200).json({
       success: true,
       data: rows,
-      total: count,
-      currentPage: page,
+      totalData: count,
       totalPages: Math.ceil(count / limit),
+      currentPage: parseInt(req.query.page) || 1,
     });
   } catch (err) {
     next(err);
