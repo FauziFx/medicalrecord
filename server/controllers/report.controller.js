@@ -108,4 +108,152 @@ self.getDailyReport = async (req, res, next) => {
   }
 };
 
+self.getSummary = async (req, res, next) => {
+  try {
+    const { startDate, endDate } = req.query;
+
+    const total = await Transaction.findAll({
+      attributes: ["id", "total_amount"],
+      where: {
+        [Op.and]: [
+          {
+            date: {
+              [Op.between]: [new Date(startDate), new Date(endDate)],
+            },
+          },
+          {
+            include_revenue: 1,
+          },
+        ],
+      },
+    });
+
+    const totalRevenue = total.reduce(
+      (accum, curr) => accum + curr.total_amount,
+      0
+    );
+    const average = totalRevenue / total.length;
+
+    const transactionId = total.map((item) => item.id);
+
+    const totalItem = await TransactionDetail.sum("qty", {
+      where: {
+        transactionId: transactionId,
+      },
+    });
+
+    const salesByTransactionType = await Transaction.findAll({
+      attributes: [
+        "transactionTypeId",
+        [Sequelize.fn("SUM", Sequelize.col("total_amount")), "total_amount"],
+      ],
+      where: {
+        date: {
+          [Op.between]: [new Date(startDate), new Date(endDate)],
+        },
+      },
+      include: [
+        {
+          model: TransactionType,
+          as: "transactionType",
+          attributes: ["name"], // kalau kamu mau ambil nama transaksinya juga
+        },
+      ],
+      group: ["transactionTypeId"],
+    });
+
+    const customerIncludeRevenue = await Transaction.findAll({
+      attributes: [
+        "customerId",
+        [Sequelize.fn("SUM", Sequelize.col("total_amount")), "total_amount"],
+      ],
+      where: {
+        date: {
+          [Op.between]: [new Date(startDate), new Date(endDate)],
+        },
+      },
+      include: [
+        {
+          model: Customer,
+          as: "customer",
+          where: {
+            include_revenue: true,
+          },
+          attributes: ["name"], // kalau mau tampilkan nama customer juga
+        },
+      ],
+      group: ["customerId", "customer.id"],
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalRevenue: totalRevenue,
+        average: average,
+        totalTransaction: total.length,
+        totalItemSold: totalItem,
+        salesByTransactionType: salesByTransactionType,
+        customerIncludeRevenue: customerIncludeRevenue,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+self.getTopCustomer = async (req, res, next) => {
+  try {
+    const { typeId, startDate, endDate } = req.query;
+
+    let where = {};
+    if (typeId) {
+      where.transactionTypeId = typeId;
+    }
+
+    const results = await Customer.findAll({
+      attributes: [
+        "id",
+        "name",
+        "include_revenue",
+        [
+          Sequelize.fn(
+            "COALESCE",
+            Sequelize.fn("SUM", Sequelize.col("transactions.total_amount")),
+            0
+          ),
+          "total_amount",
+        ],
+      ],
+      where: where,
+      include: [
+        {
+          model: TransactionType,
+          as: "transactionType",
+          attributes: ["name"],
+        },
+        {
+          model: Transaction,
+          as: "transactions",
+          attributes: [],
+          where: {
+            date: {
+              [Op.between]: [new Date(startDate), new Date(endDate)],
+            },
+          },
+          required: false, // biar customer tanpa transaksi tetap muncul
+        },
+      ],
+      group: ["Customer.id"],
+      order: [[Sequelize.literal("total_amount"), "DESC"]],
+    });
+
+    res.status(200).json({
+      success: true,
+      data: results,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = self;
