@@ -256,4 +256,126 @@ self.getTopCustomer = async (req, res, next) => {
   }
 };
 
+self.getTransactionTrend = async (req, res, next) => {
+  try {
+    const { range } = req.query; // 7 atau 30
+    const days = range === "30" ? 29 : 6;
+    const today = new Date();
+    const pastDate = new Date();
+    pastDate.setDate(today.getDate() - days);
+
+    // Generate daftar semua tanggal dalam range (supaya tidak bolong-bolong)
+    // const labels = [];
+    // for (let d = new Date(pastDate); d <= today; d.setDate(d.getDate() + 1)) {
+    //   labels.push(d.toISOString().slice(0, 10)); // format YYYY-MM-DD
+    // }
+
+    const dateLabels = [];
+    for (let d = new Date(pastDate); d <= today; d.setDate(d.getDate() + 1)) {
+      const yearMonthDay = d.toISOString().slice(0, 10); // "2025-04-20"
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+
+      dateLabels.push({
+        full: yearMonthDay,
+        short: `${month}-${day}`,
+      });
+    }
+
+    // Lalu bikin label
+    const labels = dateLabels.map((dl) => dl.short);
+
+    const transactions = await Transaction.findAll({
+      where: {
+        date: {
+          [Op.between]: [pastDate, today],
+        },
+        include_revenue: 1, // optional kalau mau
+      },
+      include: [
+        {
+          model: TransactionType,
+          attributes: ["id", "name"],
+          as: "transactionType",
+        },
+      ],
+      attributes: ["total_amount", "date", "transactionTypeId"],
+    });
+
+    // Group data
+    const grouped = {};
+
+    transactions.forEach((tx) => {
+      const typeName = tx.transactionType.name;
+      const dateKey = tx.date.toISOString().slice(0, 10);
+
+      if (!grouped[typeName]) {
+        grouped[typeName] = {};
+      }
+
+      if (!grouped[typeName][dateKey]) {
+        grouped[typeName][dateKey] = 0;
+      }
+
+      grouped[typeName][dateKey] += tx.total_amount;
+    });
+
+    // Bikin series sesuai format apexchart
+    const series = Object.keys(grouped).map((typeName) => ({
+      name: typeName,
+      data: dateLabels.map((dl) => grouped[typeName][dl.full] || 0),
+    }));
+    return res.status(200).json({ success: true, data: { labels, series } });
+  } catch (error) {
+    next(error);
+  }
+};
+
+self.getTopSellingProducts = async (req, res, next) => {
+  try {
+    const { range } = req.query; // ambil query param, misal ?range=7 atau ?range=30
+
+    const days = range === "30" ? 29 : 6; // default ke 7 kalau tidak diisi
+    const today = new Date();
+    const pastDate = new Date();
+    pastDate.setDate(today.getDate() - (days - 1));
+
+    // Cari data TransactionDetail yang join ke Transaction untuk filter tanggal
+    const topProducts = await TransactionDetail.findAll({
+      attributes: [
+        "productName",
+        [Sequelize.fn("SUM", Sequelize.col("qty")), "totalQty"],
+      ],
+      include: [
+        {
+          model: Transaction,
+          attributes: [], // tidak perlu ambil field apa-apa
+          as: "transaction",
+          where: {
+            createdAt: {
+              [Op.between]: [pastDate, today],
+            },
+          },
+        },
+      ],
+      group: ["productName"],
+      order: [[Sequelize.literal("totalQty"), "DESC"]],
+      limit: 10,
+      raw: true,
+    });
+
+    const labels = topProducts.map((p) => p.productName);
+    const series = topProducts.map((p) => parseInt(p.totalQty)); // pastikan integer
+    return res.status(200).json({
+      success: true,
+      data: {
+        labels,
+        series,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = self;
