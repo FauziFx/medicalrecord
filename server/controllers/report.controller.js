@@ -185,6 +185,24 @@ self.getSummary = async (req, res, next) => {
       group: ["customerId", "customer.id"],
     });
 
+    const salesByPaymentMethod = await Transaction.findAll({
+      attributes: [
+        "payment_method",
+        [Sequelize.fn("SUM", Sequelize.col("total_amount")), "total_amount"],
+      ],
+      where: {
+        [Op.and]: [
+          {
+            date: {
+              [Op.between]: [new Date(startDate), new Date(endDate)],
+            },
+          },
+          { include_revenue: 1 },
+        ],
+      },
+      group: ["payment_method"],
+    });
+
     res.status(200).json({
       success: true,
       data: {
@@ -194,6 +212,7 @@ self.getSummary = async (req, res, next) => {
         totalItemSold: totalItem,
         salesByTransactionType: salesByTransactionType,
         customerIncludeRevenue: customerIncludeRevenue,
+        salesByPaymentMethod: salesByPaymentMethod,
       },
     });
   } catch (error) {
@@ -263,12 +282,6 @@ self.getTransactionTrend = async (req, res, next) => {
     const today = new Date();
     const pastDate = new Date();
     pastDate.setDate(today.getDate() - days);
-
-    // Generate daftar semua tanggal dalam range (supaya tidak bolong-bolong)
-    // const labels = [];
-    // for (let d = new Date(pastDate); d <= today; d.setDate(d.getDate() + 1)) {
-    //   labels.push(d.toISOString().slice(0, 10)); // format YYYY-MM-DD
-    // }
 
     const dateLabels = [];
     for (let d = new Date(pastDate); d <= today; d.setDate(d.getDate() + 1)) {
