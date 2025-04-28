@@ -26,6 +26,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       sequelize,
       modelName: "warrantyclaim",
+      tableName: "warrantyclaims",
     }
   );
   return warrantyclaim;
