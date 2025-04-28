@@ -4,6 +4,7 @@ const {
   TransactionDetail,
   TransactionType,
   Customer,
+  Retail,
   Sequelize,
 } = require("../models");
 const fs = require("fs");
@@ -203,6 +204,14 @@ self.getSummary = async (req, res, next) => {
       group: ["payment_method"],
     });
 
+    const totalRetail = await Retail.sum("price", {
+      where: {
+        date: {
+          [Op.between]: [new Date(startDate), new Date(endDate)],
+        },
+      },
+    });
+
     res.status(200).json({
       success: true,
       data: {
@@ -213,6 +222,7 @@ self.getSummary = async (req, res, next) => {
         salesByTransactionType: salesByTransactionType,
         customerIncludeRevenue: customerIncludeRevenue,
         salesByPaymentMethod: salesByPaymentMethod,
+        totalRetail: totalRetail,
       },
     });
   } catch (error) {
