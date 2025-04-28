@@ -32,7 +32,7 @@ self.getDailyReport = async (req, res, next) => {
         attributes: ["id", "name"],
         as: "transactionType",
       },
-      group: ["transactionTypeId", "TransactionType.id", "payment_method"],
+      group: ["transactionTypeId", "transactionType.id", "payment_method"],
       order: [
         ["transactionTypeId", "ASC"],
         ["payment_method", "ASC"],
