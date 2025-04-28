@@ -31,6 +31,7 @@ const transactionTypeRouter = require("./routes/transactiontype.routes");
 const customerRouter = require("./routes/customer.routes");
 const transactionRouter = require("./routes/transaction.routes");
 const reportRouter = require("./routes/report.routes");
+const retailRouter = require("./routes/retail.routes");
 
 const optic = require("./controllers/optic.controller");
 
@@ -92,6 +93,7 @@ app.use("/v1/transaction-types", transactionTypeRouter);
 app.use("/v1/customers", customerRouter);
 app.use("/v1/transactions", transactionRouter);
 app.use("/v1/reports", reportRouter);
+app.use("/v1/retails", retailRouter);
 
 // error handler
 app.use(ErrorHandler);
