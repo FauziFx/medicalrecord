@@ -90,6 +90,7 @@ self.create = async (req, res, next) => {
     // 2. Siapkan variants dengan SKU
     const variantsWithSku = variants.map((v, index) => ({
       ...v,
+      productName: name.split("(")[0] || "",
       productId: newProduct.id,
       sku: generateSku(categoryId, newProduct.id, index),
     }));
