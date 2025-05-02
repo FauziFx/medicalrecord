@@ -8,6 +8,7 @@ import {
   Details,
 } from "@/pages/MedicalRecord";
 import { Optic, AddOptic, EditOptic } from "@/pages/Optic";
+import { Stock } from "@/pages/Stock";
 import { Warranties, WarrantyClaim, AddWarrantyClaim } from "@/pages/Warranty";
 import { Users, AddUser, EditUser } from "@/pages/Users";
 import { RecycleBin } from "@/pages/RecycleBin";
@@ -22,6 +23,7 @@ import {
   Store,
   Users as UsersIcon,
   IdCard,
+  PackageSearch,
 } from "lucide-react";
 import { Navigate } from "react-router-dom";
 
@@ -137,6 +139,14 @@ const routes = [
         roles: ["admin", "user"],
       },
     ],
+  },
+  {
+    name: "Stock Lens",
+    path: "/stocks",
+    icon: <PackageSearch className="h-4 w-4" />,
+    component: Stock,
+    showInMenu: true,
+    roles: ["admin", "user"],
   },
   {
     name: "Optics",
