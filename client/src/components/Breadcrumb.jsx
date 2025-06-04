@@ -23,8 +23,9 @@ export function Breadcrumb({ className }) {
               }
             >
               <Link to={to}>
-                {value.charAt(0).toUpperCase() +
-                  value.replaceAll("-", " ").slice(1)}
+                {isNaN(value) &&
+                  value.charAt(0).toUpperCase() +
+                    value.replaceAll("-", " ").slice(1)}
               </Link>
             </li>
           );
