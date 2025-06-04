@@ -172,7 +172,7 @@ self.getStockLens = async (req, res, next) => {
 
     let coatingCondition = null;
 
-    if (type) {
+    if (coating) {
       // hanya aktif jika type dipilih
       if (coating == "putih") {
         coatingCondition = { [Op.like]: "%putih%" };
