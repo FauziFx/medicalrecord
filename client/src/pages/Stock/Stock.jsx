@@ -154,6 +154,7 @@ export function Stock() {
                     onClick={() => {
                       setShowDetail(true);
                       setProductName(productName);
+                      setPageDetail(1);
                     }}
                   >
                     <td className="border-b border-gray-200" width="1%">
@@ -200,7 +201,10 @@ export function Stock() {
         <div className="overflow-x-auto card bg-white shadow-md mt-4 p-2 pb-6">
           <button
             className="btn btn-xs btn-primary w-fit m-2"
-            onClick={() => setShowDetail(false)}
+            onClick={() => {
+              setShowDetail(false);
+              setPage(1);
+            }}
           >
             « Back
           </button>
@@ -237,7 +241,6 @@ export function Stock() {
                         ? "bg-yellow-100"
                         : ""
                     }`}
-                    onClick={() => setShowDetail(true)}
                   >
                     <td className="border-b border-gray-200">{productName}</td>
                     <td className="border-b border-gray-200">{name}</td>
