@@ -8,7 +8,7 @@
   "main": "index.js",
   "scripts": {
     "client": "cd client && npm run dev",
-    "server": "cd server && node app.js",
+    "server": "cd server && nodemon app.js",
     "dev": "concurrently \"npm run client\" \"npm run server\""
   },
   "dependencies": {
