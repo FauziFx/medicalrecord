@@ -8,9 +8,7 @@ const {
   Sequelize,
 } = require("../models");
 const fs = require("fs");
-const Op = Sequelize.Op;
-const fn = Sequelize.fn;
-const col = Sequelize.col;
+const { Op, fn, col, literal } = Sequelize;
 
 let self = {};
 
@@ -394,6 +392,134 @@ self.getTopSellingProducts = async (req, res, next) => {
       data: {
         labels,
         series,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+self.getSummaryExport = async (req, res, next) => {
+  try {
+    const { startDate, endDate } = req.query;
+
+    const sales = await Transaction.findAll({
+      attributes: [
+        [fn("DATE", col("date")), "Date"],
+        [fn("SUM", col("total_amount")), "Total Sales"],
+      ],
+      where: {
+        date: {
+          [Op.between]: [startDate, endDate],
+        },
+        include_revenue: 1,
+      },
+      group: [literal("DATE(date)")],
+    });
+
+    const retails = await Retail.findAll({
+      attributes: [
+        [fn("DATE", col("date")), "Date"],
+        [fn("SUM", col("price")), "Total Sales"],
+      ],
+      where: {
+        date: {
+          [Op.between]: [startDate, endDate],
+        },
+      },
+      group: [literal("DATE(date)")],
+    });
+
+    const customers = await Customer.findAll({
+      attributes: [
+        ["name", "Customer Name"],
+        [
+          Sequelize.fn(
+            "COALESCE",
+            Sequelize.fn("SUM", Sequelize.col("transactions.total_amount")),
+            0
+          ),
+          "Total Sales",
+        ],
+      ],
+      include: [
+        {
+          model: Transaction,
+          as: "transactions",
+          attributes: [],
+          where: {
+            date: {
+              [Op.between]: [new Date(startDate), new Date(endDate)],
+            },
+          },
+          required: false, // biar customer tanpa transaksi tetap muncul
+        },
+      ],
+      group: ["Customer.id"],
+      order: [[Sequelize.literal("`Total Sales`"), "DESC"]],
+    });
+
+    const totalSales = sales.reduce(
+      (sum, item) => sum + Number(item.get("Total Sales")),
+      0
+    );
+
+    const totalRetail = retails.reduce(
+      (sum, item) => sum + Number(item.get("Total Sales")),
+      0
+    );
+
+    const totalCustomer = customers.reduce(
+      (sum, item) => sum + Number(item.get("Total Sales")),
+      0
+    );
+    sales.push({ Date: "TOTAL", "Total Sales": totalSales });
+    retails.push({ Date: "TOTAL", "Total Sales": totalRetail });
+    customers.push({
+      "Customer Name": "TOTAL",
+      "Total Sales": totalCustomer,
+    });
+
+    const revenue = await Transaction.findAll({
+      attributes: [
+        "customerId",
+        [Sequelize.fn("SUM", Sequelize.col("total_amount")), "Total"],
+      ],
+      where: {
+        date: {
+          [Op.between]: [new Date(startDate), new Date(endDate)],
+        },
+      },
+      include: [
+        {
+          model: Customer,
+          as: "customer",
+          where: {
+            include_revenue: true,
+          },
+          attributes: ["name"], // kalau mau tampilkan nama customer juga
+        },
+      ],
+      group: ["customerId", "customer.id"],
+    });
+
+    const formatedRevenue = revenue.map((item) => ({
+      Name: item.customer.name,
+      Total: item.get("Total"),
+    }));
+    const totalRevenue = totalSales + totalRetail;
+    formatedRevenue.push(
+      { Name: "Retails / Eceran", Total: totalRetail },
+      { Name: "TOTAL", Total: totalRevenue }
+    );
+
+    res.status(200).json({
+      success: true,
+      data: {
+        sales,
+        retails,
+        customers,
+        revenue: formatedRevenue,
       },
     });
   } catch (error) {
