@@ -311,7 +311,6 @@ self.getTransactionTrend = async (req, res, next) => {
         date: {
           [Op.between]: [pastDate, today],
         },
-        include_revenue: 1, // optional kalau mau
       },
       include: [
         {
