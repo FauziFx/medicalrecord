@@ -145,11 +145,17 @@ self.create = async (req, res, next) => {
           { transaction: t }
         );
 
-        await Variant.decrement("stock", {
-          by: item.qty,
+        const variant = await Variant.findOne({
           where: { id: item.variantId },
-          transaction: t,
         });
+
+        if (variant.track_stock === 1) {
+          await Variant.decrement("stock", {
+            by: item.qty,
+            where: { id: item.variantId },
+            transaction: t,
+          });
+        }
       })
     );
 
