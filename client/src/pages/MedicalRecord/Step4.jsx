@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import UseFormStore from "@/store/UseFormStore";
 import { Save } from "lucide-react";
 import dayjs from "dayjs"; // Core Day.js
@@ -25,6 +25,8 @@ export function Step4({ dataOptic }) {
     resetNewData,
     skipOldData,
     resetPatientData,
+    garansiFrame,
+    garansiLensa,
   } = UseFormStore();
   const [isLoading, setIsLoading] = React.useState(false);
   const navigate = useNavigate();
@@ -48,8 +50,56 @@ export function Step4({ dataOptic }) {
 
   const handleSubmit = async () => {
     try {
-      setIsLoading(true);
+      if (garansiFrame != "-" || garansiLensa != "-") {
+        const expiredFrame =
+          garansiFrame === "-"
+            ? newData.date
+            : garansiFrame === "6"
+            ? dayjs.utc(newData.date).add("6", "M").format("YYYY-MM-DD")
+            : dayjs
+                .utc(newData.date)
+                .add(garansiFrame, "y")
+                .format("YYYY-MM-DD");
 
+        const expiredLensa =
+          garansiLensa === "-"
+            ? newData.date
+            : garansiLensa === "6"
+            ? dayjs.utc(newData.date).add("6", "M").format("YYYY-MM-DD")
+            : dayjs
+                .utc(newData.date)
+                .add(garansiLensa, "y")
+                .format("YYYY-MM-DD");
+
+        const payloadGaransi = {
+          name: patientData.name,
+          frame: note.frame,
+          lens: note.lens,
+          od: [
+            newData.rsph,
+            newData.rcyl,
+            newData.raxis,
+            newData.radd,
+            newData.far_pd / 2,
+          ].join("/"),
+          os: [
+            newData.lsph,
+            newData.lcyl,
+            newData.laxis,
+            newData.ladd,
+            newData.far_pd / 2,
+          ].join("/"),
+          warranty_lens: garansiFrame,
+          warranty_frame: garansiLensa,
+          expire_lens: expiredLensa,
+          expire_frame: expiredFrame,
+          opticId: newData.opticId,
+          createdAt: newData.date,
+        };
+        await api.post("/warranty", payloadGaransi);
+      }
+
+      setIsLoading(true);
       const savePatient = await api.post("/patient", {
         name: patientData.name,
         address: patientData.address,
@@ -61,9 +111,7 @@ export function Step4({ dataOptic }) {
         conditions: patientData.conditions,
         opticId: Number(patientData.opticId),
       });
-
       const patientId = savePatient.data.patientId;
-
       const record = [];
       const oldRecord = {
         od: [oldData.rsph, oldData.rcyl, oldData.raxis, oldData.radd].join("/"),
@@ -93,26 +141,20 @@ export function Step4({ dataOptic }) {
         is_olddata: 0,
         patientId: patientId,
       };
-
       if (oldData.rsph != "") {
         record.push(oldRecord);
       }
-
       record.push(newRecord);
-
       const formData = new FormData();
       formData.append("image", image);
       formData.append("records", JSON.stringify(record));
-
       const response = await api.post("/medicalrecord", formData);
-
       if (response.data.success) {
         setIsLoading(false);
         resetPatientData();
         skipOldData();
         resetNewData();
         setStep(1);
-
         navigate("/medical-record/patients");
       }
     } catch (error) {
@@ -237,7 +279,7 @@ export function Step4({ dataOptic }) {
         )}
       </table>
 
-      {/* Uukuran Baru */}
+      {/* Ukuran Baru */}
       <table className="table table-xs md:table-sm max-w-md rounded-box border border-base-content/5 bg-base-100">
         <thead>
           <tr>
@@ -307,6 +349,104 @@ export function Step4({ dataOptic }) {
           </tr>
         </tbody>
       </table>
+
+      {/* Garansi */}
+      {garansiFrame != "-" || garansiLensa != "-" ? (
+        <>
+          <table className="table table-xs md:table-sm max-w-md rounded-box border border-base-content/5 bg-base-100">
+            <thead>
+              <tr>
+                <th className="text-black" colSpan={5}>
+                  Kartu Garansi
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td width="35%">Tanggal</td>
+                <td width="1%">:</td>
+                <td>
+                  {dayjs(newData.date).tz("Asia/Jakarta").format("DD-MM-YYYY")}
+                </td>
+              </tr>
+              <tr>
+                <td>Optik</td>
+                <td>:</td>
+                <td>{!isLoadingOptic && opticNames[newData.opticId - 1]}</td>
+              </tr>
+              <tr>
+                <td>Nama</td>
+                <td>:</td>
+                <td>{patientData.name}</td>
+              </tr>
+              <tr>
+                <td>Frame</td>
+                <td>:</td>
+                <td>
+                  {note.frame}{" "}
+                  {garansiFrame != "-" && (
+                    <>
+                      {garansiFrame == "6"
+                        ? `(${garansiFrame} Bulan)`
+                        : `(${garansiFrame} Tahun)`}
+                    </>
+                  )}
+                </td>
+              </tr>
+              <tr>
+                <td>Lensa</td>
+                <td>:</td>
+                <td>
+                  {note.lens}
+                  {garansiLensa != "-" && (
+                    <>
+                      {garansiLensa == "6"
+                        ? `(${garansiLensa} Bulan)`
+                        : `(${garansiLensa} Tahun)`}
+                    </>
+                  )}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <table className="table table-xs md:table-sm max-w-md rounded-box border border-base-content/5 bg-base-100">
+            <tbody>
+              <tr>
+                <td className="border-y py-1">OD</td>
+                <td className="border-y py-1">{newData.rsph}</td>
+                <td className="border-y py-1">{newData.rcyl}</td>
+                <td className="border-y py-1">{newData.raxis}</td>
+                <td className="border-y py-1">{newData.radd}</td>
+                <td className="border-y py-1">{newData.far_pd / 2}</td>
+              </tr>
+              <tr>
+                <td className="border-y py-1">OS</td>
+                <td className="border-y py-1">{newData.lsph}</td>
+                <td className="border-y py-1">{newData.lcyl}</td>
+                <td className="border-y py-1">{newData.laxis}</td>
+                <td className="border-y py-1">{newData.ladd}</td>
+                <td className="border-y py-1">{newData.far_pd / 2}</td>
+              </tr>
+            </tbody>
+          </table>
+          <table className="table table-xs md:table-sm max-w-md rounded-box border border-base-content/5 bg-base-100">
+            <tbody>
+              <tr>
+                <td width="35%" className="align-top">
+                  Keterangan
+                </td>
+                <td width="1%" className="align-top">
+                  :
+                </td>
+                <td>{note.note}</td>
+              </tr>
+            </tbody>
+          </table>
+        </>
+      ) : (
+        <></>
+      )}
+
       <div className="p-6">
         <img
           src={image != "" ? URL.createObjectURL(image) : ""}

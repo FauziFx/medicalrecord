@@ -27,6 +27,10 @@ export function AddMedicalRecords() {
     image,
     updateImage,
     resetNewData,
+    garansiFrame,
+    garansiLensa,
+    setGaransiFrame,
+    setGaransiLensa,
   } = UseFormStore();
   const inputFile = useRef(null);
 
@@ -104,6 +108,55 @@ export function AddMedicalRecords() {
     e.preventDefault();
     try {
       setIsLoadingSave(true);
+
+      if (garansiFrame != "-" || garansiLensa != "-") {
+        const expiredFrame =
+          garansiFrame === "-"
+            ? newData.date
+            : garansiFrame === "6"
+            ? dayjs.utc(newData.date).add("6", "M").format("YYYY-MM-DD")
+            : dayjs
+                .utc(newData.date)
+                .add(garansiFrame, "y")
+                .format("YYYY-MM-DD");
+
+        const expiredLensa =
+          garansiLensa === "-"
+            ? newData.date
+            : garansiLensa === "6"
+            ? dayjs.utc(newData.date).add("6", "M").format("YYYY-MM-DD")
+            : dayjs
+                .utc(newData.date)
+                .add(garansiLensa, "y")
+                .format("YYYY-MM-DD");
+
+        const payloadGaransi = {
+          name: data.dataPatient.name,
+          frame: note.frame,
+          lens: note.lens,
+          od: [
+            newData.rsph,
+            newData.rcyl,
+            newData.raxis,
+            newData.radd,
+            newData.far_pd / 2,
+          ].join("/"),
+          os: [
+            newData.lsph,
+            newData.lcyl,
+            newData.laxis,
+            newData.ladd,
+            newData.far_pd / 2,
+          ].join("/"),
+          warranty_lens: garansiFrame,
+          warranty_frame: garansiLensa,
+          expire_lens: expiredLensa,
+          expire_frame: expiredFrame,
+          opticId: newData.opticId,
+          createdAt: newData.date,
+        };
+        await api.post("/warranty", payloadGaransi);
+      }
 
       const record = [];
 
@@ -335,7 +388,7 @@ export function AddMedicalRecords() {
               <select
                 className="select select-sm w-full max-w-xs"
                 required
-                value={newData.opticId}
+                value={newData.opticId || ""}
                 onChange={(e) => updateNewData("opticId", e.target.value)}
               >
                 <option disabled value="">
@@ -360,7 +413,7 @@ export function AddMedicalRecords() {
                 required
               />
             </div>
-            <div className="w-full max-w-xs mb-2">
+            <div className="w-full max-w-xs">
               <label className="text-xs font-semibold">
                 Keterangan (Optional)
               </label>
@@ -392,6 +445,34 @@ export function AddMedicalRecords() {
                 value={note.note}
                 onChange={(e) => updateNote("note", e.target.value)}
               ></textarea>
+            </div>
+            <div className="w-full max-w-xs">
+              <label className="text-xs">Garansi Frame</label>
+              <select
+                className="select select-sm w-full max-w-xs"
+                value={garansiFrame}
+                onChange={(e) => setGaransiFrame(e.target.value)}
+              >
+                <option value="-">-</option>
+                <option value="6">6 Bulan</option>
+                <option value="1">1 Tahun</option>
+                <option value="2">2 Tahun</option>
+                <option value="3">3 Tahun</option>
+              </select>
+            </div>
+            <div className="w-full max-w-xs mb-2">
+              <label className="text-xs">Garansi Lensa</label>
+              <select
+                className="select select-sm w-full max-w-xs"
+                value={garansiLensa}
+                onChange={(e) => setGaransiLensa(e.target.value)}
+              >
+                <option value="-">-</option>
+                <option value="6">6 Bulan</option>
+                <option value="1">1 Tahun</option>
+                <option value="2">2 Tahun</option>
+                <option value="3">3 Tahun</option>
+              </select>
             </div>
             <div className="w-full max-w-xs mb-2">
               <label className="text-xs font-semibold">Lampiran</label>

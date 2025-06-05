@@ -7,6 +7,11 @@ const UseFormStore = create((set) => ({
   currentStep: 1,
   setStep: (value) => set((state) => ({ currentStep: value })),
 
+  garansiFrame: "-",
+  garansiLensa: "-",
+  setGaransiFrame: (value) => set((state) => ({ garansiFrame: value })),
+  setGaransiLensa: (value) => set((state) => ({ garansiLensa: value })),
+
   // Handle Patient Data
   patientData: {
     name: "",
@@ -171,6 +176,8 @@ const UseFormStore = create((set) => ({
         note: "",
       },
       image: "",
+      garansiFrame: "-",
+      garansiLensa: "-",
     })),
 }));
 

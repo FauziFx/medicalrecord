@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import UseFormStore from "@/store/UseFormStore";
 import { ImageUp } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
@@ -15,6 +15,10 @@ export function Step3({ dataOptic }) {
     updateNote,
     image,
     updateImage,
+    garansiFrame,
+    garansiLensa,
+    setGaransiFrame,
+    setGaransiLensa,
   } = UseFormStore();
   const inputFile = useRef(null);
 
@@ -223,7 +227,7 @@ export function Step3({ dataOptic }) {
             required
           />
         </div>
-        <div className="w-full max-w-xs mb-2">
+        <div className="w-full max-w-xs">
           <label className="text-xs font-semibold">Keterangan (Optional)</label>
           <input
             type="text"
@@ -253,6 +257,34 @@ export function Step3({ dataOptic }) {
             value={note.note}
             onChange={(e) => updateNote("note", e.target.value)}
           ></textarea>
+        </div>
+        <div className="w-full max-w-xs">
+          <label className="text-xs">Garansi Frame</label>
+          <select
+            className="select select-sm w-full max-w-xs"
+            value={garansiFrame}
+            onChange={(e) => setGaransiFrame(e.target.value)}
+          >
+            <option value="-">-</option>
+            <option value="6">6 Bulan</option>
+            <option value="1">1 Tahun</option>
+            <option value="2">2 Tahun</option>
+            <option value="3">3 Tahun</option>
+          </select>
+        </div>
+        <div className="w-full max-w-xs mb-2">
+          <label className="text-xs">Garansi Lensa</label>
+          <select
+            className="select select-sm w-full max-w-xs"
+            value={garansiLensa}
+            onChange={(e) => setGaransiLensa(e.target.value)}
+          >
+            <option value="-">-</option>
+            <option value="6">6 Bulan</option>
+            <option value="1">1 Tahun</option>
+            <option value="2">2 Tahun</option>
+            <option value="3">3 Tahun</option>
+          </select>
         </div>
         <div className="w-full max-w-xs mb-2">
           <label className="text-xs font-semibold">Lampiran</label>
