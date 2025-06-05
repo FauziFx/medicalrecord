@@ -123,7 +123,10 @@ export function Step4({ dataOptic }) {
   if (error) return <p>Error loading data.</p>;
   return (
     <div className="flex flex-col justify-center items-center">
-      <h1 className="mt-6 mb-4 font-semibold text-xl">Ringkasan</h1>
+      <h1 className="mt-6 font-semibold text-xl">Ringkasan</h1>
+      <p className="text-center text-xs mb-4 text-gray-500">
+        Harap periksa kembali data pasien sebelum menyimpan.
+      </p>
       <table className="table table-xs md:table-sm max-w-md rounded-box border border-base-content/5 bg-base-100">
         <thead>
           <tr>

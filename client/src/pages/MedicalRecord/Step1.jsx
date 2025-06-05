@@ -98,7 +98,7 @@ export function Step1() {
           <select
             className="select select-sm w-full max-w-xs"
             required
-            value={patientData.opticId}
+            value={patientData.opticId || ""}
             onChange={(e) => updatePatientData("opticId", e.target.value)}
           >
             <option disabled value="">

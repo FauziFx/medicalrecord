@@ -198,7 +198,7 @@ export function Step3({ dataOptic }) {
           <select
             className="select select-sm w-full max-w-xs"
             required
-            value={newData.opticId}
+            value={newData.opticId || ""}
             onChange={(e) => updateNewData("opticId", e.target.value)}
           >
             <option disabled value="">
