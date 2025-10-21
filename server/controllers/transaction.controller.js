@@ -164,6 +164,7 @@ self.create = async (req, res, next) => {
       success: true,
       message: "Transaction created successfully",
       receipt: transaction.receipt_no,
+      id: transaction.id,
     });
   } catch (err) {
     await t.rollback();
