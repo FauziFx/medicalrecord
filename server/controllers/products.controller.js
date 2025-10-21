@@ -36,7 +36,7 @@ self.get = async (req, res, next) => {
 
     const { count, rows } = await Product.findAndCountAll({
       attributes: isAll
-        ? ["id", "name"]
+        ? ["id", "name","categoryId"]
         : [
             "id",
             "name",
@@ -57,6 +57,7 @@ self.get = async (req, res, next) => {
             },
           ],
       where: whereCondition,
+      order:[["name", "ASC"]],
       ...(isAll ? {} : { limit, offset }),
     });
 
@@ -111,14 +112,23 @@ self.create = async (req, res, next) => {
 self.getById = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { adjustment = false } = req.query;
+    const { adjustment = false, onlyBasic = false } = req.query;
 
     const whereVariant = {};
     if (adjustment) {
       whereVariant.track_stock = 1;
     }
+    
+     const variantAttributes = onlyBasic
+      ? ["id", "name", "price"]
+      : undefined; // default ambil semua
+      
+      const productAttributes = onlyBasic
+      ? ["id", "name"]
+      : undefined; // default ambil semua
 
     const response = await Product.findByPk(id, {
+        attributes:productAttributes,
       include: [
         {
           model: Category,
@@ -128,6 +138,7 @@ self.getById = async (req, res, next) => {
         {
           model: Variant,
           as: "variants",
+          attributes:variantAttributes,
           where: whereVariant,
           order: [["name", "ASC"]],
         },
