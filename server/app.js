@@ -34,6 +34,7 @@ const reportRouter = require("./routes/report.routes");
 const retailRouter = require("./routes/retail.routes");
 
 const optic = require("./controllers/optic.controller");
+const stock = require("./controllers/stock.controller");
 
 const app = express();
 
@@ -46,6 +47,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 app.use("/", indexRouter);
+
+app.get("/v1/stock-lens", stock.stockLens);
 
 // Get Image
 app.get("/v1/upload/image/:imageName", (req, res) => {

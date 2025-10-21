@@ -311,4 +311,26 @@ self.getStockByName = async (req, res, next) => {
   }
 };
 
+self.stockLens = async (req, res, next) => {
+  try {
+    const data = await Variant.findAll({
+      include: {
+        model: Product,
+        attributes: [],
+        as: "product",
+        where: { categoryId: 4 },
+      },
+      attributes: ["productId", "productName", ["name", "variantName"], "stock"],
+    });
+
+    res.json({
+      success: true,
+      message: "Data found",
+      data: data,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = self;
