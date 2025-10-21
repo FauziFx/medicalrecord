@@ -172,6 +172,34 @@ self.create = async (req, res, next) => {
   }
 };
 
+// Update payment or customer
+self.update = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { payment_method, include_revenue, customerId, transactionTypeId } =
+      req.body;
+
+    const transaction = await Transaction.findByPk(id);
+    if (!transaction) {
+      return res.status(404).json({ message: "Transaction not found" });
+    }
+
+    // Update hanya field yang dikirim
+    if (payment_method !== undefined)
+      transaction.payment_method = payment_method;
+    if (include_revenue !== undefined)
+      transaction.include_revenue = include_revenue;
+    if (customerId !== undefined) transaction.customerId = customerId;
+    if (transactionTypeId !== undefined)
+      transaction.transactionTypeId = transactionTypeId;
+
+    await transaction.save();
+    res.json({ message: "Transaction updated", transaction });
+  } catch (err) {
+    next(err);
+  }
+};
+
 const generateReceiptNo = () => {
   const shortTime = Date.now().toString().slice(-6); // 6 digit terakhir dari timestamp
   const randomStr = Math.random().toString(36).substring(2, 6).toUpperCase(); // 4 huruf
