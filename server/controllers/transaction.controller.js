@@ -105,10 +105,15 @@ self.create = async (req, res, next) => {
       transactionDetails,
     } = req.body;
 
-    if (!customerId) {
+    if (!customerId || customerId === "") {
       const defaultCustomer = await Customer.findOne({
         where: { is_default: 1 },
+        transaction: t,
       });
+
+      if (!defaultCustomer) {
+        throw new Error("Default customer tidak ditemukan di database.");
+      }
 
       customerId = defaultCustomer.id;
       include_revenue = defaultCustomer.include_revenue;
@@ -126,38 +131,38 @@ self.create = async (req, res, next) => {
         customerId,
         transactionTypeId,
       },
-      { transaction: t }
+      { transaction: t },
     );
 
-    await Promise.all(
-      transactionDetails.map(async (item) => {
-        await TransactionDetail.create(
-          {
-            productId: item.productId,
-            productName: item.productName,
-            variantId: item.variantId,
-            variantName: item.variantName,
-            price: Number(item.price),
-            qty: Number(item.qty),
-            subtotal: item.subtotal,
-            transactionId: transaction.id,
-          },
-          { transaction: t }
-        );
+    for (const item of transactionDetails) {
+      await TransactionDetail.create(
+        {
+          productId: item.productId,
+          productName: item.productName,
+          variantId: item.variantId,
+          variantName: item.variantName,
+          price: Number(item.price),
+          qty: Number(item.qty),
+          subtotal: item.subtotal,
+          transactionId: transaction.id,
+        },
+        { transaction: t },
+      );
 
-        const variant = await Variant.findOne({
+      const variant = await Variant.findOne({
+        where: { id: item.variantId },
+        transaction: t,
+        lock: t.LOCK.UPDATE,
+      });
+
+      if (variant.track_stock === 1) {
+        await Variant.decrement("stock", {
+          by: Number(item.qty),
           where: { id: item.variantId },
+          transaction: t,
         });
-
-        if (variant.track_stock === 1) {
-          await Variant.decrement("stock", {
-            by: item.qty,
-            where: { id: item.variantId },
-            transaction: t,
-          });
-        }
-      })
-    );
+      }
+    }
 
     await t.commit();
     res.status(201).json({

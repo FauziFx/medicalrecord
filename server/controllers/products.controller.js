@@ -36,7 +36,7 @@ self.get = async (req, res, next) => {
 
     const { count, rows } = await Product.findAndCountAll({
       attributes: isAll
-        ? ["id", "name","categoryId"]
+        ? ["id", "name", "categoryId"]
         : [
             "id",
             "name",
@@ -48,7 +48,13 @@ self.get = async (req, res, next) => {
             "updatedAt",
           ],
       include: isAll
-        ? []
+        ? [
+            {
+              model: Variant,
+              attributes: ["id", "name", "price"],
+              as: "variants",
+            },
+          ]
         : [
             {
               model: Category,
@@ -57,7 +63,7 @@ self.get = async (req, res, next) => {
             },
           ],
       where: whereCondition,
-      order:[["name", "ASC"]],
+      order: [["name", "ASC"]],
       ...(isAll ? {} : { limit, offset }),
     });
 
@@ -118,17 +124,13 @@ self.getById = async (req, res, next) => {
     if (adjustment) {
       whereVariant.track_stock = 1;
     }
-    
-     const variantAttributes = onlyBasic
-      ? ["id", "name", "price"]
-      : undefined; // default ambil semua
-      
-      const productAttributes = onlyBasic
-      ? ["id", "name"]
-      : undefined; // default ambil semua
+
+    const variantAttributes = onlyBasic ? ["id", "name", "price"] : undefined; // default ambil semua
+
+    const productAttributes = onlyBasic ? ["id", "name"] : undefined; // default ambil semua
 
     const response = await Product.findByPk(id, {
-        attributes:productAttributes,
+      attributes: productAttributes,
       include: [
         {
           model: Category,
@@ -138,7 +140,7 @@ self.getById = async (req, res, next) => {
         {
           model: Variant,
           as: "variants",
-          attributes:variantAttributes,
+          attributes: variantAttributes,
           where: whereVariant,
           order: [["name", "ASC"]],
         },
@@ -207,7 +209,7 @@ self.update = async (req, res, next) => {
     // 1. Update product data
     await Product.update(
       { name, categoryId, status, description, base_price },
-      { where: { id } }
+      { where: { id } },
     );
 
     // 2. Delete variants that were removed
@@ -232,7 +234,7 @@ self.update = async (req, res, next) => {
     // 5. Cari last index dari SKU lama
     const lastSkuIndex = existingVariants.length
       ? Math.max(
-          ...existingVariants.map((v) => parseInt(v.sku?.slice(-3)) || 0)
+          ...existingVariants.map((v) => parseInt(v.sku?.slice(-3)) || 0),
         )
       : 0;
 
