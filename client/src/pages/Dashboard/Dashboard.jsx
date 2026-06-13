@@ -1,25 +1,26 @@
 import React, { useState } from "react";
-import Chart from "react-apexcharts";
 import {
   Book,
   BookPlus,
-  Eye,
-  Package,
-  ShoppingBag,
   User,
   UserPlus,
+  ArrowUpRight,
+  PlusCircle,
+  Search,
+  Activity,
+  IdCard,
 } from "lucide-react";
 import api from "@/utils/api";
 import useSWR from "swr";
 import LoadingDashboard from "../../components/LoadingDashboard";
 import DonutChart from "../../components/DonutChart";
 import LoadingTable from "../../components/LoadingTable";
-import dayjs from "dayjs"; // Core Day.js
-import utc from "dayjs/plugin/utc"; // Plugin UTC
-import timezone from "dayjs/plugin/timezone"; // Plugin Timezone
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
 import { Link } from "react-router-dom";
+import AreaChart from "../../components/AreaChart";
 
-// Extend plugins ke Day.js
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
@@ -28,279 +29,342 @@ export function Dashboard() {
   const [medicalRecord6Month, setMedicalRecord6Month] = useState(true);
 
   const fetcher = async (url) => {
-    try {
-      const response = await api.get(url);
-      return response.data;
-    } catch (error) {
-      console.log(error);
-    }
+    const response = await api.get(url);
+    return response.data;
   };
 
   const { data, error, isLoading } = useSWR(`/dashboard/summary`, fetcher, {
     revalidateOnFocus: false,
   });
+
   const {
     data: dataPatient,
     error: errorPatient,
     isLoading: isLoadingPatient,
   } = useSWR(`/patient?limit=5`, fetcher, { revalidateOnFocus: false });
 
-  if (error || errorPatient) return <p>Error loading data.</p>;
+  if (error || errorPatient)
+    return (
+      <div className="alert alert-error max-w-md mx-auto mt-10 rounded-2xl">
+        Gagal memuat data dashboard.
+      </div>
+    );
   if (isLoading) return <LoadingDashboard />;
 
-  const areaChartData = {
-    series: [
-      {
-        name: "Patient",
-        data: patient6Month
-          ? data.trends.patientData6Months.map((item) => item.patientCount)
-          : data.trends.patientData12Months.map((item) => item.patientCount),
-      },
-    ],
-    options: {
-      chart: {
-        type: "area",
-        zoom: {
-          enabled: false,
-        },
-      },
-      dataLabels: {
-        enabled: false,
-      },
-      stroke: {
-        curve: "straight",
-      },
-      labels: patient6Month
-        ? data.trends.patientData6Months.map((item) => item.month)
-        : data.trends.patientData12Months.map((item) => item.month),
-      yaxis: {
-        opposite: true,
-      },
-      legend: {
-        horizontalAlign: "left",
-      },
-    },
-  };
+  // Sinkronisasi Warna Chart ke Tema Medis Modern (#0284c7)
+  const chartColors = ["#0284c7", "#38bdf8", "#0ea5e9", "#7dd3fc"];
 
-  const barChartData = {
-    series: [
-      {
-        name: "Medical Record",
-        data: medicalRecord6Month
-          ? data.trends.medicalRecordData6Months.map((item) => item.recordCount)
-          : data.trends.medicalRecordData12Months.map(
-              (item) => item.recordCount
-            ),
-      },
-    ],
-    options: {
-      chart: {
-        type: "bar",
-        zoom: {
-          enable: false,
-        },
-      },
-      plotOptions: {
-        bar: {
-          columnWidth: "90%",
-          distributed: true,
-        },
-      },
-      dataLabels: {
-        enabled: false,
-      },
-      legend: {
-        show: false,
-      },
-      xaxis: {
-        categories: medicalRecord6Month
-          ? data.trends.medicalRecordData6Months.map((item) => item.month)
-          : data.trends.medicalRecordData12Months.map((item) => item.month),
-      },
-    },
-  };
+  const patientData = patient6Month
+    ? data.trends.patientData6Months
+    : data.trends.patientData12Months;
+
+  const medicalRecordData = medicalRecord6Month
+    ? data.trends.medicalRecordData6Months
+    : data.trends.medicalRecordData12Months;
 
   return (
-    <div>
-      <h1 className="text-xl font-bold mb-4">Dashboard</h1>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="bg-primary text-primary-content p-2 px-4 shadow-md flex justify-between items-center rounded-xl">
-          <div>
-            <h3 className="text-md font-semibold">Patients</h3>
-            <p className="text-xl font-bold">{data.statistics.totalPatients}</p>
-            <span className="text-xs font-light">&nbsp;</span>
-          </div>
-          <User className="w-8 h-8 opacity-75" />
+    <div className="space-y-6">
+      {/* SECTION 1: HEADER & QUICK ACTIONS (Ditambah Tombol Baru) */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-base-100 p-4 sm:p-5 rounded-2xl border border-base-300/60 shadow-sm">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight text-base-content flex items-center gap-2">
+            <Activity className="h-5 w-5 text-primary" /> Ringkasan Klinik
+          </h1>
+          <p className="text-xs text-base-content/60">
+            Berikut data pantauan rekam medis saat ini.
+          </p>
         </div>
-        <div className="bg-secondary text-secondary-content p-2 px-4 shadow-md flex justify-between items-center rounded-xl">
-          <div>
-            <h3 className="text-md font-semibold">New Patients</h3>
-            <p className="text-xl font-bold">
-              {data.statistics.patientsThisMonth}
+
+        {/* AREA TOMBOL-TOMBOL QUICK ACTIONS */}
+        {/* flex-wrap bikin tombol otomatis turun ke bawah kalau di HP layar kecil agar tidak terpotong */}
+        <div className="grid grid-cols-2 md:flex md:flex-row items-center gap-2 w-full md:w-auto">
+          <Link
+            to="/medical-record/patients"
+            className="btn btn-primary btn-sm rounded-xl font-semibold gap-1.5 shadow-sm text-xs"
+          >
+            <PlusCircle className="h-4 w-4" /> Pasien Baru
+          </Link>
+
+          <Link
+            to="/warranty/warranties"
+            className="btn btn-outline btn-primary btn-sm rounded-xl font-semibold gap-1.5 text-xs"
+          >
+            <IdCard className="h-4 w-4" /> Kartu Garansi
+          </Link>
+
+          <Link
+            to="/stocks"
+            className="btn btn-outline btn-sm rounded-xl font-medium gap-1.5 text-xs"
+          >
+            <Search className="h-4 w-4" /> Cek Stok
+          </Link>
+        </div>
+      </div>
+
+      {/* SECTION 2: STAT CARDS (Super Simple & Compact Mobile View) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        {/* Total Patients */}
+        <div className="bg-base-100 p-3 sm:p-5 rounded-xl sm:rounded-2xl border border-base-300/60 shadow-sm flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-blue-50 text-blue-600 shrink-0 hidden sm:block">
+            <User className="w-5 h-5" />
+          </div>
+          <div className="min-w-0">
+            <span className="text-[10px] sm:text-xs font-semibold text-base-content/50 uppercase tracking-wider block truncate">
+              Total Pasien
+            </span>
+            <p className="text-xl sm:text-3xl font-extrabold text-base-content tracking-tight">
+              {data.statistics.totalPatients}
             </p>
-            <span className="text-xs font-light">This Month</span>
           </div>
-          <UserPlus className="w-8 h-8 opacity-75" />
         </div>
-        <div className="bg-accent text-accent-content p-2 px-4 shadow-md flex justify-between items-center rounded-xl">
-          <div>
-            <h3 className="text-md font-semibold">Medical Records</h3>
-            <p className="text-xl font-bold">
+
+        {/* New Patients */}
+        <div className="bg-base-100 p-3 sm:p-5 rounded-xl sm:rounded-2xl border border-base-300/60 shadow-sm flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600 shrink-0 hidden sm:block">
+            <UserPlus className="w-5 h-5" />
+          </div>
+          <div className="min-w-0">
+            <span className="text-[10px] sm:text-xs font-semibold text-base-content/50 uppercase tracking-wider block truncate">
+              Pasien Baru
+            </span>
+            <div className="flex items-baseline gap-1.5">
+              <p className="text-xl sm:text-3xl font-extrabold text-base-content tracking-tight">
+                {data.statistics.patientsThisMonth}
+              </p>
+              <span className="text-[9px] sm:text-xs font-medium text-success sm:bg-success/10 sm:px-2 sm:py-0.5 rounded-full">
+                Bulan Ini
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Total Medical Records */}
+        <div className="bg-base-100 p-3 sm:p-5 rounded-xl sm:rounded-2xl border border-base-300/60 shadow-sm flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-purple-50 text-purple-600 shrink-0 hidden sm:block">
+            <Book className="w-5 h-5" />
+          </div>
+          <div className="min-w-0">
+            <span className="text-[10px] sm:text-xs font-semibold text-base-content/50 uppercase tracking-wider block truncate">
+              Total Berkas RM
+            </span>
+            <p className="text-xl sm:text-3xl font-extrabold text-base-content tracking-tight">
               {data.statistics.totalMedicalRecords}
             </p>
-            <span className="text-xs font-light">&nbsp;</span>
           </div>
-          <Book className="w-8 h-8 opacity-75" />
         </div>
-        <div className="bg-neutral text-neutral-content p-2 px-4 shadow-md flex justify-between items-center rounded-xl">
-          <div>
-            <h3 className="text-md font-semibold">New Medical Record</h3>
-            <p className="text-xl font-bold">
-              {data.statistics.medicalRecordsThisMonth}
-            </p>
-            <span className="text-xs font-light">This Month</span>
+
+        {/* New Medical Record */}
+        <div className="bg-base-100 p-3 sm:p-5 rounded-xl sm:rounded-2xl border border-base-300/60 shadow-sm flex items-center gap-3 text-left">
+          <div className="p-2 rounded-lg bg-amber-50 text-amber-600 shrink-0 hidden sm:block">
+            <BookPlus className="w-5 h-5" />
           </div>
-          <BookPlus className="w-8 h-8 opacity-75" />
+          <div className="min-w-0">
+            <span className="text-[10px] sm:text-xs font-semibold text-base-content/50 uppercase tracking-wider block truncate">
+              Berkas Baru
+            </span>
+            <div className="flex items-baseline gap-1.5">
+              <p className="text-xl sm:text-3xl font-extrabold text-base-content tracking-tight">
+                {data.statistics.medicalRecordsThisMonth}
+              </p>
+              <span className="text-[9px] sm:text-xs font-medium text-amber-600 sm:bg-amber-50 sm:px-2 sm:py-0.5 rounded-full">
+                Bulan Ini
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-2">
-        <div className="mb-4 bg-white border border-gray-300 rounded-xl shadow-md p-4">
-          <div className="flex justify-between items-center">
-            <h2 className="font-semibold mb-2">Patients Trend</h2>
-            <label className="swap swap-rotate bg-primary text-white p-4 py-1 rounded">
-              <input
-                type="checkbox"
-                checked={!patient6Month} // Jika "checked", berarti 12 bulan
-                onChange={() => setPatient6Month(!patient6Month)}
-              />
-              <div className="text-xs swap-on">12 Month</div>
-              <div className="text-xs swap-off">6 Month</div>
-            </label>
+      {/* SECTION 3: LINE & BAR TREND CHARTS */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Pasien Trend */}
+        <div className="bg-base-100 border border-base-300/60 rounded-2xl shadow-sm p-4 sm:p-5">
+          <div className="flex justify-between items-center mb-4">
+            <div>
+              <h2 className="font-bold text-sm tracking-tight">
+                Tren Kunjungan Pasien
+              </h2>
+              <p className="text-xs text-base-content/50">
+                Statistik jumlah pasien masuk
+              </p>
+            </div>
+            <button
+              onClick={() => setPatient6Month(!patient6Month)}
+              className="btn btn-sm btn-ghost bg-base-200 hover:bg-base-300 text-xs font-semibold rounded-lg"
+            >
+              {patient6Month ? "6 Bulan" : "12 Bulan"}
+            </button>
           </div>
-          <Chart
-            options={areaChartData.options}
-            series={areaChartData.series}
-            type="area"
-            height={220}
+          <AreaChart
+            name="Pasien"
+            dataSource={patientData}
+            valueKey="patientCount"
           />
         </div>
 
-        <div className="mb-4 bg-white border border-gray-300 rounded-xl shadow-md p-4">
-          <div className="flex justify-between items-center">
-            <h2 className="font-semibold mb-2">Medical Record Trend</h2>
-            <label className="swap swap-rotate bg-primary text-white p-4 py-1 rounded">
-              <input
-                type="checkbox"
-                checked={!medicalRecord6Month} // Jika "checked", berarti 12 bulan
-                onChange={() => setMedicalRecord6Month(!medicalRecord6Month)}
-              />
-              <div className="text-xs swap-on">12 Month</div>
-              <div className="text-xs swap-off">6 Month</div>
-            </label>
+        {/* Medical Record Trend */}
+        <div className="bg-base-100 border border-base-300/60 rounded-2xl shadow-sm p-4 sm:p-5">
+          <div className="flex justify-between items-center mb-4">
+            <div>
+              <h2 className="font-bold text-sm tracking-tight">
+                Tren Berkas Rekam Medis
+              </h2>
+              <p className="text-xs text-base-content/50">
+                Jumlah dokumen medis terbit
+              </p>
+            </div>
+            <button
+              onClick={() => setMedicalRecord6Month(!medicalRecord6Month)}
+              className="btn btn-sm btn-ghost bg-base-200 hover:bg-base-300 text-xs font-semibold rounded-lg"
+            >
+              {medicalRecord6Month ? "6 Bulan" : "12 Bulan"}
+            </button>
           </div>
-          <Chart
-            options={barChartData.options}
-            series={barChartData.series}
-            type="bar"
-            height={220}
+          <AreaChart
+            name="Rekam Medis"
+            dataSource={medicalRecordData}
+            valueKey="recordCount"
           />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <div className="mb-4 bg-white border border-gray-300 rounded-xl shadow-md p-4">
-          <h2 className="font-semibold mb-2">Age Distribution</h2>
-          <div className="flex justify-center items-center">
+      {/* SECTION 4: DEMOGRAFI & DISTRIBUSI */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Age */}
+        <div className="bg-base-100 border border-base-300/60 rounded-2xl shadow-sm p-5 flex flex-col justify-between">
+          <h2 className="font-bold text-sm mb-3">Distribusi Umur</h2>
+          <div className="flex justify-center items-center grow py-2">
             <DonutChart
               series={data.distribution.ageData.map((item) => item.count)}
               labels={data.distribution.ageData.map(
-                (item) => item.ageGroup + " Tahun"
+                (item) => item.ageGroup + " Tahun",
               )}
+              colors={chartColors}
             />
           </div>
         </div>
-        <div className="mb-4 bg-white border border-gray-300 rounded-xl shadow-md p-4">
-          <h2 className="font-semibold mb-2">Gender Distribution</h2>
-          <div className="flex justify-center items-center">
+
+        {/* Gender */}
+        <div className="bg-base-100 border border-base-300/60 rounded-2xl shadow-sm p-5 flex flex-col justify-between">
+          <h2 className="font-bold text-sm mb-3">Distribusi Gender</h2>
+          <div className="flex justify-center items-center grow py-2">
             <DonutChart
               series={data.distribution.genderData.map((item) => item.count)}
               labels={data.distribution.genderData.map((item) => item.gender)}
+              colors={["#0284c7", "#f43f5e"]}
+            />
+          </div>
+        </div>
+
+        {/* Occupations */}
+        <div className="bg-base-100 border border-base-300/60 rounded-2xl shadow-sm p-5 flex flex-col justify-between sm:col-span-2 lg:col-span-1">
+          <h2 className="font-bold text-sm mb-3">Pekerjaan Terbanyak</h2>
+          <div className="flex justify-center items-center grow py-2">
+            <DonutChart
+              series={data.distribution.occupationData.map(
+                (item) => item.count,
+              )}
+              labels={data.distribution.occupationData.map(
+                (item) => item.occupation,
+              )}
+              colors={chartColors}
             />
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <div className="mb-4 bg-white border border-gray-300 rounded-xl shadow-md p-4">
-          <h2 className="font-semibold mb-2">Most Common Occupations</h2>
-          <div className="flex justify-center items-center">
-            <DonutChart
-              series={data.distribution.occupationData.map(
-                (item) => item.count
-              )}
-              labels={data.distribution.occupationData.map(
-                (item) => item.occupation
-              )}
-            />
+      {/* SECTION 5: RECENT PATIENTS LIST */}
+      <div className="bg-base-100 border border-base-300/60 rounded-2xl shadow-sm p-4 sm:p-5">
+        {/* HEADER KARTU */}
+        <div className="flex justify-between items-center mb-4">
+          <div>
+            <h2 className="font-bold text-sm sm:text-base tracking-tight text-base-content">
+              Pasien Terbaru
+            </h2>
+            <p className="text-[11px] sm:text-xs text-base-content/50">
+              Daftar pendaftaran pasien paling akhir
+            </p>
           </div>
+          <Link
+            to="/medical-record/patients"
+            className="btn btn-ghost btn-xs text-primary font-semibold gap-1"
+          >
+            Lihat Semua →
+          </Link>
         </div>
-        <div className="mb-4 bg-white border border-gray-300 rounded-xl shadow-md p-4">
-          <div className="flex justify-between items-center">
-            <h2 className="font-semibold mb-2">Recent Patient</h2>
-            <Link
-              to="/medical-record/patients"
-              className="btn btn-link text-xs"
-            >
-              Details
-            </Link>
-          </div>
-          <div className="flex justify-center items-center">
-            <table className="table table-xs w-full table-auto">
-              {/* Head */}
-              <thead>
-                <tr>
-                  {["#", "Name", "Date"].map((el) => (
-                    <th
-                      key={el}
-                      className="border-b border-blue-gray-50 py-3 px-2 text-left"
-                    >
-                      <p
-                        variant="small"
-                        className="text-[11px] font-bold uppercase text-blue-gray-400"
-                      >
-                        {el}
-                      </p>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              {/* Body */}
-              <tbody>
-                {!isLoadingPatient ? (
-                  dataPatient.data.map(({ name, createdAt }, index) => (
-                    <tr key={index}>
-                      <td className="border-b border-gray-200">{index + 1}</td>
-                      <td className="border-b border-gray-200">
-                        <p className="text-xs font-semibold capitalize">
-                          {name.toLowerCase()}
-                        </p>
-                      </td>
-                      <td className="border-b border-gray-200">
-                        <p className="text-xs text-gray-500 font-light">
-                          {dayjs(createdAt)
-                            .tz("Asia/Jakarta")
-                            .format("DD-MM-YYYY")}
-                        </p>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <LoadingTable row="5" colspan="3" />
-                )}
-              </tbody>
-            </table>
-          </div>
+
+        {/* VIEW 1: KHUSUS MOBILE (Menggunakan Flex List - Tanpa Tag Table Bawaan) */}
+        <div className="block md:hidden divide-y divide-base-200/60">
+          {!isLoadingPatient ? (
+            dataPatient.data.map(({ name, createdAt }, index) => (
+              <div
+                key={index}
+                className="flex items-center justify-between py-3 gap-3 first:pt-1 last:pb-1"
+              >
+                {/* Sisi Kiri: Nomor & Nama */}
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="font-mono text-xs text-base-content/30 w-4 shrink-0">
+                    {index + 1}
+                  </span>
+                  <p className="text-xs font-semibold text-base-content truncate tracking-tight">
+                    {
+                      name.toUpperCase() /* Gunakan uppercase murni atau normalkan dari DB */
+                    }
+                  </p>
+                </div>
+
+                {/* Sisi Kanan: Tanggal & Jam Ramping */}
+                <div className="text-right shrink-0">
+                  <p className="text-xs font-medium text-base-content/80">
+                    {dayjs(createdAt).tz("Asia/Jakarta").format("DD MMM YYYY")}
+                  </p>
+                  <p className="text-[10px] font-mono text-base-content/40 mt-0.5">
+                    {dayjs(createdAt).tz("Asia/Jakarta").format("HH:mm")} WIB
+                  </p>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="text-center py-4 text-xs text-base-content/50">
+              Memuat data...
+            </div>
+          )}
+        </div>
+
+        {/* VIEW 2: KHUSUS DESKTOP (Tabel Normal Kamu yang Lama) */}
+        <div className="hidden md:block overflow-x-auto w-full">
+          <table className="table table-sm w-full">
+            <thead>
+              <tr className="border-b border-base-300 text-base-content/40 text-xs">
+                <th className="w-12 text-center">#</th>
+                <th>Nama Pasien</th>
+                <th>Tanggal Registrasi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {!isLoadingPatient ? (
+                dataPatient.data.map(({ name, createdAt }, index) => (
+                  <tr
+                    key={index}
+                    className="hover:bg-base-200/40 transition-colors border-b border-base-200"
+                  >
+                    <td className="text-center font-mono text-xs text-base-content/40">
+                      {index + 1}
+                    </td>
+                    <td className="font-semibold text-xs text-base-content capitalize">
+                      {name.toLowerCase()}
+                    </td>
+                    <td className="text-xs text-base-content/60">
+                      {dayjs(createdAt)
+                        .tz("Asia/Jakarta")
+                        .format("DD-MM-YYYY — HH:mm")}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <LoadingTable row="5" colspan="3" />
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

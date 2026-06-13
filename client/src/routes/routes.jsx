@@ -1,16 +1,10 @@
+// src/routes/routes.js
 import { Dashboard } from "@/pages/Dashboard";
-import {
-  Patients,
-  MedicalRecords,
-  AddMedicalRecords,
-  AddPatientData,
-  EditPatientData,
-  Details,
-} from "@/pages/MedicalRecord";
-import { Optic, AddOptic, EditOptic } from "@/pages/Optic";
+import { Patients, MedicalRecords } from "@/pages/MedicalRecord";
+import { Optic } from "@/pages/Optic";
 import { Stock } from "@/pages/Stock";
-import { Warranties, WarrantyClaim, AddWarrantyClaim } from "@/pages/Warranty";
-import { Users, AddUser, EditUser } from "@/pages/Users";
+import { Warranties, WarrantyClaim } from "@/pages/Warranty";
+import { Users } from "@/pages/Users";
 import { RecycleBin } from "@/pages/RecycleBin";
 import { Profile } from "@/pages/Profile";
 import MedicalRecordLayout from "@/layouts/MedicalRecordLayout";
@@ -25,7 +19,6 @@ import {
   IdCard,
   PackageSearch,
 } from "lucide-react";
-import { Navigate } from "react-router-dom";
 
 const routes = [
   {
@@ -46,58 +39,16 @@ const routes = [
     children: [
       {
         name: "Patients",
-        path: "/medical-record",
-        component: Patients,
-        showInMenu: false,
-        roles: ["admin", "user"],
-      },
-      {
-        name: "Patients",
-        path: "/medical-record/patients",
+        path: "/medical-record/patients", // Gabungkan halaman tambah/edit pakai modal di sini
         component: Patients,
         showInMenu: true,
         roles: ["admin", "user"],
       },
       {
-        name: "Medical Record",
+        name: "Medical Records",
         path: "/medical-record/medical-records",
         component: MedicalRecords,
         showInMenu: true,
-        roles: ["admin", "user"],
-      },
-      {
-        name: "Add Medical Record",
-        path: "/medical-record/add-medical-record",
-        component: AddMedicalRecords,
-        showInMenu: false,
-        roles: ["admin", "user"],
-      },
-      {
-        name: "Add Patient Data",
-        path: "/medical-record/add-patient-data",
-        component: AddPatientData,
-        showInMenu: false,
-        roles: ["admin", "user"],
-      },
-      {
-        name: "Edit Patient Data",
-        path: "/medical-record/edit-patient-data/:id",
-        component: EditPatientData,
-        showInMenu: false,
-        roles: ["admin", "user"],
-      },
-      {
-        name: "Edit Patient Data",
-        path: "/medical-record/edit-patient-data",
-        component: () => <Navigate to="/medical-record" replace />,
-        showInMenu: false,
-        roles: ["admin", "user"],
-      },
-      {
-        name: "Details Patient",
-        path: "/medical-record/patients/:id",
-        component: Details,
-        showInMenu: false,
         roles: ["admin", "user"],
       },
     ],
@@ -112,13 +63,6 @@ const routes = [
     children: [
       {
         name: "Warranties",
-        path: "/warranty",
-        component: Warranties,
-        showInMenu: false,
-        roles: ["admin", "user"],
-      },
-      {
-        name: "Warranties",
         path: "/warranty/warranties",
         component: Warranties,
         showInMenu: true,
@@ -129,14 +73,7 @@ const routes = [
         path: "/warranty/warranty-claim",
         component: WarrantyClaim,
         showInMenu: true,
-        roles: ["admin", "user"],
-      },
-      {
-        name: "Add Warranty Claim",
-        path: "/warranty/add-warranty-claim",
-        component: AddWarrantyClaim,
-        showInMenu: false,
-        roles: ["admin", "user"],
+        roles: ["admin"],
       },
     ],
   },
@@ -150,34 +87,10 @@ const routes = [
   },
   {
     name: "Optics",
-    path: "/optics",
+    path: "/optics", // Halaman Add/Edit gabung di sini atau pakai parameter URL langsung
     icon: <Store className="h-4 w-4" />,
     component: Optic,
     showInMenu: true,
-    roles: ["admin"],
-  },
-  {
-    name: "Add Optic",
-    path: "/optics/add-optic",
-    icon: <Store className="h-4 w-4" />,
-    component: AddOptic,
-    showInMenu: false,
-    roles: ["admin"],
-  },
-  {
-    name: "Edit Optic",
-    path: "/optics/edit-optic/:id",
-    icon: <Store className="h-4 w-4" />,
-    component: EditOptic,
-    showInMenu: false,
-    roles: ["admin"],
-  },
-  {
-    name: "Edit Optic",
-    path: "/optics/edit-optic",
-    icon: <Store className="h-4 w-4" />,
-    component: () => <Navigate to="/optics" replace />,
-    showInMenu: false,
     roles: ["admin"],
   },
   {
@@ -186,30 +99,6 @@ const routes = [
     icon: <UsersIcon className="h-4 w-4" />,
     component: Users,
     showInMenu: true,
-    roles: ["admin"],
-  },
-  {
-    name: "Add Users",
-    path: "/users/add-user",
-    icon: <UsersIcon className="h-4 w-4" />,
-    component: AddUser,
-    showInMenu: false,
-    roles: ["admin"],
-  },
-  {
-    name: "Edit Users",
-    path: "/users/edit-user/:id",
-    icon: <UsersIcon className="h-4 w-4" />,
-    component: EditUser,
-    showInMenu: false,
-    roles: ["admin"],
-  },
-  {
-    name: "Edit Users",
-    path: "/users/edit-user",
-    icon: <UsersIcon className="h-4 w-4" />,
-    component: () => <Navigate to="/users" replace />,
-    showInMenu: false,
     roles: ["admin"],
   },
   {

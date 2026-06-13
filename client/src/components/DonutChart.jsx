@@ -1,37 +1,45 @@
 import React from "react";
 import Chart from "react-apexcharts";
 
-function DonutChart({ series, labels }) {
+function DonutChart({ series, labels, colors }) {
   const donutChartData = {
     series: series,
     options: {
       chart: {
-        width: "100%",
         type: "donut",
+        fontFamily: "inherit",
       },
       labels: labels,
-      responsive: [
-        {
-          breakpoint: 480,
-          options: {
-            chart: {
-              width: 200,
-            },
-            legend: {
-              position: "bottom",
-            },
-          },
+      colors: colors || ["#0284c7", "#0ea5e9", "#38bdf8", "#7dd3fc"],
+      stroke: {
+        colors: ["var(--color-base-100)"],
+        width: 2,
+      },
+      legend: {
+        position: "bottom",
+        fontSize: "12px",
+        labels: {
+          colors: "var(--color-base-content)",
         },
-      ],
+      },
+      dataLabels: {
+        enabled: true,
+        style: {
+          fontSize: "11px",
+        },
+      },
     },
   };
+
   return (
-    <Chart
-      options={donutChartData.options}
-      series={donutChartData.series}
-      type="donut"
-      width={300}
-    />
+    <div className="w-full max-w-[280px] mx-auto">
+      <Chart
+        options={donutChartData.options}
+        series={donutChartData.series}
+        type="donut"
+        width="100%"
+      />
+    </div>
   );
 }
 

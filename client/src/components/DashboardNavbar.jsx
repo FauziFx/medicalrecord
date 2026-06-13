@@ -1,4 +1,4 @@
-import { Bell, Menu, User } from "lucide-react";
+import { Bell, Menu, User, LogOut } from "lucide-react";
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Breadcrumb } from "@/components";
@@ -6,91 +6,94 @@ import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
 
 export function DashboardNavbar({ setIsChecked }) {
+  const token = Cookies.get("token");
   const userName = Cookies.get("user")
     ? Cookies.get("user")
-    : jwtDecode(Cookies.get("token")).name;
+    : token
+      ? jwtDecode(token).name
+      : "Admin";
+
   const navigate = useNavigate();
+
   return (
-    <div className="navbar bg-transparent py-0">
-      <div className="flex-1">
+    <div className="navbar bg-transparent px-4 md:px-6 py-3 min-h-12">
+      <div className="flex-1 gap-2">
+        {/* Tombol Hamburger di Mobile */}
         <button
-          role="button"
-          className="btn btn-ghost btn-circle lg:hidden"
+          type="button"
+          className="btn btn-ghost btn-sm btn-square lg:hidden bg-base-100 border border-base-300/50 shadow-sm rounded-lg"
           onClick={() => setIsChecked(true)}
         >
           <Menu className="h-4 w-4" />
         </button>
-        <Link to="/" className="btn btn-ghost text-lg md:hidden">
-          daisyUI
-        </Link>
-        <Breadcrumb className="hidden md:block pl-5" />
+
+        {/* Breadcrumb Desktop */}
+        <Breadcrumb className="hidden md:block" />
       </div>
-      <div className="flex items-center gap-2">
+
+      {/* Sisi Kanan Navigasi */}
+      <div className="flex items-center gap-3">
+        {/* Dropdown Notifikasi */}
         <div className="dropdown dropdown-end">
           <button
             tabIndex={0}
-            role="button"
-            className="btn btn-ghost btn-circle"
+            className="btn btn-ghost btn-sm btn-square bg-base-100 border border-base-300/50 shadow-sm rounded-lg"
           >
-            <div className="indicator">
-              <Bell className="h-4 w-4" />
-              {/* <span className="badge badge-xs badge-primary indicator-item">
-                8
-              </span> */}
-            </div>
+            <Bell className="h-4 w-4" />
           </button>
           <ul
             tabIndex={0}
-            className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-72 p-2 shadow"
+            className="dropdown-content menu p-2 shadow-lg bg-base-100 rounded-2xl border border-base-300/60 w-72 mt-2 z-50"
           >
-            <li>
-              <div className="d-flex flex-column justify-content-center">
-                <h6 className="text-xs mb-1">
-                  <span className="font-bold">New message</span>
-                  <br /> Lorem ipsum dolor sit amet.
-                </h6>
-                <p className="text-xs text-secondary mb-0">13 minutes ago</p>
-              </div>
+            <li className="menu-title text-xs font-semibold px-3 py-2 border-b border-base-100">
+              Notifikasi Terbaru
             </li>
             <li>
-              <div className="d-flex flex-column justify-content-center">
-                <h6 className="text-xs mb-1">
-                  <span className="font-bold">New message</span>
-                  <br /> Lorem ipsum dolor sit amet.
-                </h6>
-                <p className="text-xs text-secondary mb-0">13 minutes ago</p>
+              <div className="flex flex-col items-start gap-0.5 p-3">
+                <span className="font-semibold text-xs text-base-content">
+                  Pasien Baru Terdaftar
+                </span>
+                <span className="text-[11px] text-base-content/60">
+                  Sistem mendeteksi penambahan data pasien.
+                </span>
               </div>
             </li>
           </ul>
         </div>
+
+        {/* Dropdown User Profile */}
         <div className="dropdown dropdown-end">
           <button
             tabIndex={0}
-            role="button"
-            className="btn btn-ghost rounded-full md:rounded px-3 avatar"
+            className="btn btn-ghost btn-sm gap-2 bg-base-100 border border-base-300/50 shadow-sm rounded-lg pl-2 pr-3"
           >
-            <User className="h-4 w-4" />{" "}
-            <span className="text-xs hidden md:block">{userName}</span>
+            <div className="w-6 h-6 rounded-md bg-primary/10 flex items-center justify-center text-primary">
+              <User className="h-3.5 w-3.5" />
+            </div>
+            <span className="text-xs font-medium hidden sm:block">
+              {userName}
+            </span>
           </button>
           <ul
             tabIndex={0}
-            className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
+            className="dropdown-content menu p-1.5 shadow-lg bg-base-100 rounded-2xl border border-base-300/60 w-52 mt-2 z-50"
           >
             <li>
-              <Link to="/profile" className="justify-between">
-                Profile
+              <Link to="/profile" className="text-xs rounded-xl py-2">
+                Detail Profil
               </Link>
             </li>
-            <div className="divider my-0"></div>
+            <div className="divider my-1 opacity-60"></div>
             <li>
               <button
+                className="text-xs text-error rounded-xl py-2 hover:bg-error/10"
                 onClick={() => {
                   Cookies.remove("token");
                   Cookies.remove("user");
                   navigate("/login");
                 }}
               >
-                Logout
+                <LogOut className="h-3.5 w-3.5" /> Keluar Aplikasi
               </button>
             </li>
           </ul>

@@ -2,10 +2,35 @@
 @plugin "daisyui" {
   themes: light --default;
 }
+
+@theme {
+  /* Menggunakan font modern & clean */
+  --font-sans: "Inter", "Outfit", sans-serif;
+}
+
+/* Kustomisasi Tema DaisyUI v5 */
+:root {
+  --color-primary: #0284c7; /* Sky Blue - Memberi kesan bersih, profesional, medis */
+  --color-primary-content: #ffffff;
+  --color-secondary: #0f172a; /* Dark Slate - Untuk teks utama dan komponen gelap */
+  --color-success: #10b981; /* Mint Green - Untuk status normal/selesai */
+  --color-error: #ef4444; /* Soft Red - Untuk alert / eror rekam medis */
+
+  --color-base-100: #ffffff; /* Background Card */
+  --color-base-200: #f8fafc; /* Background Halaman (Sangat light gray-blue) */
+  --color-base-300: #e2e8f0; /* Border yang tipis dan bersih */
+  --color-base-content: #334155; /* Warna teks abu-abu gelap (lebih soft dari hitam pekat) */
+}
+
 * {
   font-family: "Inter", sans-serif;
   font-optical-sizing: auto;
 }
+
+.menu {
+  --menu-active-bg: var(--color-sky-700);
+}
+
 .drawer-overlay {
   background-color: rgb(0 0 0 / 15%) !important;
 }

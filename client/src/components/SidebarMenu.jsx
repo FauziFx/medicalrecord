@@ -6,6 +6,7 @@ import { jwtDecode } from "jwt-decode";
 const userRole = Cookies.get("token")
   ? jwtDecode(Cookies.get("token")).role
   : "";
+
 export const SidebarMenu = (menuItems, setIsChecked, currentPath) => {
   return (
     <>
@@ -13,41 +14,46 @@ export const SidebarMenu = (menuItems, setIsChecked, currentPath) => {
         .filter(
           (menu) =>
             (menu.roles.length === 0 || menu.roles.includes(userRole)) &&
-            menu.showInMenu
+            menu.showInMenu,
         )
-        .map((item, index) => (
-          <li key={index}>
-            {item.children ? (
-              <details open={true} className="mb-2">
-                <summary
-                  className={
-                    currentPath.split("/")[1] == item.path.split("/")[1]
-                      ? "bg-neutral text-white shadow-md rounded-md"
-                      : ""
-                  }
+        .map((item, index) => {
+          const isParentActive =
+            currentPath.split("/")[1] === item.path.split("/")[1];
+          const isChildActive = currentPath === item.path;
+
+          return (
+            <li key={index} className="w-full">
+              {item.children ? (
+                <details open={isParentActive} className="w-full">
+                  <summary
+                    className={`font-medium py-2.5 px-3 rounded-xl transition-all ${
+                      isParentActive
+                        ? "bg-primary/10 text-primary font-semibold"
+                        : "hover:bg-base-200"
+                    }`}
+                  >
+                    {item.icon} <span>{item.name}</span>
+                  </summary>
+                  <ul className="before:bg-base-300 ml-4 mt-1 pl-2 gap-1 flex flex-col border-l border-base-200">
+                    {SidebarMenu(item.children, setIsChecked, currentPath)}
+                  </ul>
+                </details>
+              ) : (
+                <Link
+                  to={item.path}
+                  onClick={() => setIsChecked(false)}
+                  className={`font-medium py-2.5 px-3 rounded-xl transition-all flex items-center gap-3 ${
+                    isChildActive
+                      ? "bg-primary text-primary-content font-semibold shadow-sm"
+                      : "hover:bg-base-200 text-base-content/80"
+                  }`}
                 >
-                  {item.icon} {item.name}
-                </summary>
-                <ul className="menu bg-white text-base-content min-h-1/2 w-auto pr-0">
-                  {SidebarMenu(item.children, setIsChecked, currentPath)}
-                </ul>
-              </details>
-            ) : (
-              <Link
-                to={item.path}
-                onClick={() => setIsChecked(false)}
-                className={
-                  "mb-2 " +
-                  (currentPath == item.path
-                    ? "bg-neutral text-white shadow-md rounded-md"
-                    : "")
-                }
-              >
-                {item.icon} {item.name}
-              </Link>
-            )}
-          </li>
-        ))}
+                  {item.icon} <span>{item.name}</span>
+                </Link>
+              )}
+            </li>
+          );
+        })}
     </>
   );
 };
