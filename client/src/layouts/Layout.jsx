@@ -52,7 +52,7 @@ function Layout() {
               +
             </div>
             <span className="font-bold text-base tracking-tight">
-              Medical Records
+              Rekam Medis
             </span>
           </div>
 

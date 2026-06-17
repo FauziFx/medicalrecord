@@ -69,3 +69,95 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 img:where(.swal2-image) {
   height: 80vh;
 }
+
+/* ==========================================================================
+   CUSTOM STYLING SWEETALERT2 (SKY BLUE)
+   ========================================================================== */
+
+/* 1. Desain Wadah Popup Utama */
+.swal2-popup {
+  font-family: "Inter", "Outfit", sans-serif !important;
+  border-radius: 1.25rem !important; /* rounded-2xl */
+  padding: 2rem !important;
+  background-color: var(--color-base-100) !important;
+  border: 1px solid rgba(var(--color-base-300), 0.5) !important;
+  box-shadow:
+    0 20px 25px -5px rgb(0 0 0 / 0.05),
+    0 8px 10px -6px rgb(0 0 0 / 0.05) !important;
+}
+
+/* 2. Modifikasi Judul & Deskripsi Teks */
+.swal2-title {
+  font-size: 1.25rem !important; /* text-xl */
+  font-weight: 700 !important;
+  color: var(--color-base-content) !important;
+  padding-top: 0.5rem !important;
+}
+
+.swal2-html-container {
+  font-size: 0.875rem !important; /* text-sm */
+  color: rgba(var(--color-base-content), 0.7) !important;
+  margin: 0.5rem 0 0 0 !important;
+}
+
+/* 3. Penataan Semua Jenis Tombol di SweetAlert */
+.swal2-actions {
+  gap: 0.5rem !important; /* Jarak antar tombol biar gak mepet */
+  margin-top: 1.5rem !important;
+}
+
+.swal2-styled {
+  font-size: 0.84rem !important; /* text-xs mendekati sm */
+  font-weight: 600 !important;
+  padding: 0.5rem 1.25rem !important; /* Ukuran tombol proporsional */
+  border-radius: 0.75rem !important; /* rounded-xl mirip DaisyUI */
+  transition: all 0.2s ease-in-out !important;
+  box-shadow: none !important; /* Hilangkan shadow bawaan swal */
+}
+
+/* Tombol Batalkan / Tutup (Confirm Default / Cancel) */
+.swal2-styled.swal2-confirm {
+  background-color: var(--color-base-200) !important;
+  color: var(--color-base-content) !important;
+  border: 1px solid var(--color-base-300) !important;
+}
+.swal2-styled.swal2-confirm:hover {
+  background-color: var(--color-base-300) !important;
+}
+
+/* Tombol Aksi Bahaya / Pindahkan Ke Tong Sampah (Deny Button) */
+.swal2-styled.swal2-deny {
+  background-color: var(--color-error) !important;
+  color: #ffffff !important;
+}
+.swal2-styled.swal2-deny:hover {
+  filter: brightness(0.9);
+}
+
+/* Tombol Batal Keluar / Cancel Murni jika ada */
+.swal2-styled.swal2-cancel {
+  background-color: transparent !important;
+  color: rgba(var(--color-base-content), 0.6) !important;
+  border: 1px solid transparent !important;
+}
+.swal2-styled.swal2-cancel:hover {
+  background-color: var(--color-base-200) !important;
+}
+
+/* 4. Kustomisasi Warna Icon Alert */
+.swal2-icon.swal2-warning {
+  border-color: #f59e0b !important; /* Amber-500 */
+  color: #f59e0b !important;
+}
+.swal2-icon.swal2-success {
+  border-color: var(
+    --color-primary
+  ) !important; /* Menyamakan sukses dengan identitas klinik Sky */
+  color: var(--color-primary) !important;
+}
+.swal2-icon.swal2-success .swal2-success-ring {
+  border: 4px solid rgba(2, 132, 199, 0.2) !important;
+}
+.swal2-icon.swal2-success [class^="swal2-success-line"] {
+  background-color: var(--color-primary) !important;
+}

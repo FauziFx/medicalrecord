@@ -1,6 +1,12 @@
 // src/routes/routes.js
 import { Dashboard } from "@/pages/Dashboard";
-import { Patients, MedicalRecords } from "@/pages/MedicalRecord";
+import {
+  PatientAdd,
+  PatientEdit,
+  MedicalRecords,
+  MedicalRecordAdd,
+  MedicalRecordDetail,
+} from "@/pages/MedicalRecord";
 import { Optic } from "@/pages/Optic";
 import { Stock } from "@/pages/Stock";
 import { Warranties, WarrantyClaim } from "@/pages/Warranty";
@@ -30,28 +36,44 @@ const routes = [
     roles: ["admin", "user"],
   },
   {
-    name: "Medical Record",
-    path: "/medical-record",
+    name: "Rekam Medis",
+    path: "/rekam-medis",
     icon: <Book className="h-4 w-4" />,
-    component: MedicalRecordLayout,
+    component: MedicalRecords,
     showInMenu: true,
     roles: ["admin", "user"],
-    children: [
-      {
-        name: "Patients",
-        path: "/medical-record/patients", // Gabungkan halaman tambah/edit pakai modal di sini
-        component: Patients,
-        showInMenu: true,
-        roles: ["admin", "user"],
-      },
-      {
-        name: "Medical Records",
-        path: "/medical-record/medical-records",
-        component: MedicalRecords,
-        showInMenu: true,
-        roles: ["admin", "user"],
-      },
-    ],
+  },
+  {
+    name: "Tambah Pasien",
+    path: "/rekam-medis/tambah-pasien",
+    icon: <Book className="h-4 w-4" />,
+    component: PatientAdd,
+    showInMenu: false,
+    roles: ["admin", "user"],
+  },
+  {
+    name: "Edit Pasien",
+    path: "/rekam-medis/:id/edit",
+    icon: <Book className="h-4 w-4" />,
+    component: PatientEdit,
+    showInMenu: false,
+    roles: ["admin", "user"],
+  },
+  {
+    name: "Tambah Rekam Medis",
+    path: "/rekam-medis/tambah",
+    icon: <Book className="h-4 w-4" />,
+    component: MedicalRecordAdd,
+    showInMenu: false,
+    roles: ["admin", "user"],
+  },
+  {
+    name: "Detail Pasien",
+    path: "/rekam-medis/:id",
+    icon: <Book className="h-4 w-4" />,
+    component: MedicalRecordDetail,
+    showInMenu: false,
+    roles: ["admin", "user"],
   },
   {
     name: "Warranty",
