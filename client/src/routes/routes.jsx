@@ -8,7 +8,7 @@ import {
 } from "@/pages/MedicalRecord";
 import { Optic } from "@/pages/Optic";
 import { Stock } from "@/pages/Stock";
-import { Warranties, WarrantyClaim } from "@/pages/Warranty";
+import { Warranties, WarrantyClaimAdd } from "@/pages/Warranty";
 import { Users } from "@/pages/Users";
 import { RecycleBin } from "@/pages/RecycleBin";
 import { Profile } from "@/pages/Profile";
@@ -72,6 +72,14 @@ const routes = [
     icon: <IdCard className="h-4 w-4" />,
     component: Warranties,
     showInMenu: true,
+    roles: ["admin", "user"],
+  },
+  {
+    name: "Klaim Garansi",
+    path: "/kartu-garansi/klaim",
+    icon: <IdCard className="h-4 w-4" />,
+    component: WarrantyClaimAdd,
+    showInMenu: false,
     roles: ["admin", "user"],
   },
   {

@@ -216,7 +216,7 @@ export function MedicalRecordAdd() {
   return (
     <div className="space-y-5 max-w-4xl mx-auto pb-12">
       {/* HEADER PAGE */}
-      <div className="flex items-center gap-3 bg-base-100 p-4 rounded-2xl border border-base-300/60 shadow-sm">
+      <div className="flex items-center gap-3 bg-gradient-to-r from-primary/10 via-base-100 to-base-100 p-4 rounded-2xl border border-base-300/60 shadow-sm">
         <button
           type="button"
           onClick={() => navigate(-1)}

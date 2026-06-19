@@ -66,7 +66,7 @@ export function Dashboard() {
   return (
     <div className="space-y-6">
       {/* SECTION 1: HEADER & QUICK ACTIONS (Ditambah Tombol Baru) */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-base-100 p-4 sm:p-5 rounded-2xl border border-base-300/60 shadow-sm">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-gradient-to-r from-primary/10 via-base-100 to-base-100 p-4 sm:p-5 rounded-2xl border border-base-300/60 shadow-sm">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-base-content flex items-center gap-2">
             <Activity className="h-5 w-5 text-primary" /> Ringkasan Klinik
@@ -87,7 +87,7 @@ export function Dashboard() {
           </Link>
 
           <Link
-            to="/warranty/warranties"
+            to="/karti-garansi"
             className="btn btn-outline btn-primary btn-sm rounded-xl font-semibold gap-1.5 text-xs"
           >
             <IdCard className="h-4 w-4" /> Kartu Garansi

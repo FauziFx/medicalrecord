@@ -225,7 +225,7 @@ export function Warranties() {
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Link
-                    to="/warranty/add-warranty-claim"
+                    to="/kartu-garansi/klaim"
                     state={{ warrantyId: item.id, prevPage: location.pathname }}
                     className="btn btn-primary btn-xs rounded-lg shadow-2xs gap-1"
                   >
@@ -279,7 +279,7 @@ export function Warranties() {
                       <div className="flex items-center justify-center gap-1">
                         {/* TOMBOL KLAIM GARANSI */}
                         <Link
-                          to="/warranty/add-warranty-claim"
+                          to="/kartu-garansi/klaim"
                           state={{
                             warrantyId: item.id,
                             prevPage: location.pathname,
@@ -574,7 +574,7 @@ export function Warranties() {
               </button>
               {selectedWarranty && (
                 <Link
-                  to="/warranty/add-warranty-claim"
+                  to="/kartu-garansi/klaim"
                   state={{
                     warrantyId: selectedWarranty.id,
                     prevPage: location.pathname,

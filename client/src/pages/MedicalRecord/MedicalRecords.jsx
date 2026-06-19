@@ -166,7 +166,7 @@ export function MedicalRecords() {
   return (
     <div className="space-y-4">
       {/* HEADER UTAMA */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-base-100 p-4 rounded-2xl border border-base-300/60 shadow-sm">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-gradient-to-r from-primary/10 via-base-100 to-base-100 p-4 rounded-2xl border border-base-300/60 shadow-sm">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-base-content">
             Sistem Rekam Medis
