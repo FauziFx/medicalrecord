@@ -10,7 +10,7 @@ export function Footer() {
           target="_blank"
           className="btn btn-link p-0"
         >
-          WinterAct17
+          Ahmad Fauzi
         </a>
         . All rights reserved.
       </p>

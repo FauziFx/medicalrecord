@@ -9,6 +9,7 @@ import {
   Search,
   Activity,
   IdCard,
+  FilePlus,
 } from "lucide-react";
 import api from "@/utils/api";
 import useSWR from "swr";
@@ -79,10 +80,10 @@ export function Dashboard() {
         {/* flex-wrap bikin tombol otomatis turun ke bawah kalau di HP layar kecil agar tidak terpotong */}
         <div className="grid grid-cols-2 md:flex md:flex-row items-center gap-2 w-full md:w-auto">
           <Link
-            to="/medical-record/patients"
+            to="/rekam-medis"
             className="btn btn-primary btn-sm rounded-xl font-semibold gap-1.5 shadow-sm text-xs"
           >
-            <PlusCircle className="h-4 w-4" /> Pasien Baru
+            <FilePlus className="h-4 w-4" /> Rekam Medis
           </Link>
 
           <Link

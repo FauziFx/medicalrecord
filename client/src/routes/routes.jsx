@@ -76,28 +76,12 @@ const routes = [
     roles: ["admin", "user"],
   },
   {
-    name: "Warranty",
-    path: "/warranty",
+    name: "Kartu Garansi",
+    path: "/kartu-garansi",
     icon: <IdCard className="h-4 w-4" />,
-    component: WarrantyLayout,
+    component: Warranties,
     showInMenu: true,
     roles: ["admin", "user"],
-    children: [
-      {
-        name: "Warranties",
-        path: "/warranty/warranties",
-        component: Warranties,
-        showInMenu: true,
-        roles: ["admin", "user"],
-      },
-      {
-        name: "Warranty Claim",
-        path: "/warranty/warranty-claim",
-        component: WarrantyClaim,
-        showInMenu: true,
-        roles: ["admin"],
-      },
-    ],
   },
   {
     name: "Stock Lens",
