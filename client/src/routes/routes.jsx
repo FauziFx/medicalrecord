@@ -5,7 +5,6 @@ import {
   PatientEdit,
   MedicalRecords,
   MedicalRecordAdd,
-  MedicalRecordDetail,
 } from "@/pages/MedicalRecord";
 import { Optic } from "@/pages/Optic";
 import { Stock } from "@/pages/Stock";
@@ -64,14 +63,6 @@ const routes = [
     path: "/rekam-medis/tambah",
     icon: <Book className="h-4 w-4" />,
     component: MedicalRecordAdd,
-    showInMenu: false,
-    roles: ["admin", "user"],
-  },
-  {
-    name: "Detail Pasien",
-    path: "/rekam-medis/:id",
-    icon: <Book className="h-4 w-4" />,
-    component: MedicalRecordDetail,
     showInMenu: false,
     roles: ["admin", "user"],
   },
