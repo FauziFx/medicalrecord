@@ -85,6 +85,9 @@ export function PatientAdd() {
   // SUBMIT DATA GABUNGAN (LOGIKA UTAMA STEP 4)
   const handleFinalSubmit = async (e) => {
     e.preventDefault();
+
+    if (isLoadingSave) return;
+
     try {
       setIsLoadingSave(true);
 
@@ -186,6 +189,7 @@ export function PatientAdd() {
 
       const resRecord = await api.post("/medicalrecord", formData);
       if (resRecord.data.success) {
+        setIsLoadingSave(false);
         resetPatientData();
         skipOldData();
         resetNewData();
@@ -991,6 +995,7 @@ export function PatientAdd() {
             type="button"
             onClick={() => navigate(-1)}
             className="btn btn-ghost btn-sm rounded-xl font-medium"
+            disabled={isLoadingSave}
           >
             Batal
           </button>
@@ -1000,7 +1005,10 @@ export function PatientAdd() {
             disabled={isLoadingSave}
           >
             {isLoadingSave ? (
-              <span className="loading loading-sm loading-spinner"></span>
+              <>
+                <span className="loading loading-sm loading-spinner"></span>
+                Menyimpan...
+              </>
             ) : (
               <>
                 <Save className="h-4 w-4" /> Simpan Rekam Medis

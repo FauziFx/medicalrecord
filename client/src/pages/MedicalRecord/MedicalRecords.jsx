@@ -13,6 +13,7 @@ import Cookies from "js-cookie";
 import { DateRange } from "react-date-range";
 import "react-date-range/dist/styles.css"; // main style file
 import "react-date-range/dist/theme/default.css"; // theme css file
+import { useDebounce } from "@/hooks/useDebounce";
 import {
   FilePlus,
   Info,
@@ -29,6 +30,7 @@ import {
   ClipboardList,
 } from "lucide-react";
 import { format } from "date-fns";
+import MedicalRecordDetailModal from "./MedicalRecordDetailModal";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -52,13 +54,13 @@ export function MedicalRecords() {
   const location = useLocation();
 
   // STATE MANAGEMENT
-  const [activeTab, setActiveTab] = useState("pasien"); // "pasien" atau "rekam-medis"
   const [name, setName] = useState("");
   const [opticId, setOpticId] = useState("");
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [page, setPage] = useState(1);
-  const [openRow, setOpenRow] = useState(null); // Expandable row rekam medis
+
+  const [activePatientId, setActivePatientId] = useState(null);
 
   const [state, setState] = useState([
     {
@@ -89,12 +91,17 @@ export function MedicalRecords() {
   const limit = 15;
   const API_URL = import.meta.env.VITE_API_URL;
 
+  const debouncedName = useDebounce(name, 500);
+  const debouncedOpticId = useDebounce(opticId, 300);
+  const debouncedStartDate = useDebounce(startDate, 500);
+  const debouncedEndDate = useDebounce(endDate, 500);
+
   // QUERY GENERATOR
   const query = new URLSearchParams({ page, limit });
-  if (name) query.append("name", name);
-  if (opticId) query.append("opticId", opticId);
-  if (startDate) query.append("startDate", startDate);
-  if (endDate) query.append("endDate", endDate);
+  if (name) query.append("name", debouncedName);
+  if (opticId) query.append("opticId", debouncedOpticId);
+  if (startDate) query.append("startDate", debouncedStartDate);
+  if (endDate) query.append("endDate", debouncedEndDate);
 
   // FETCHER SWR
   const fetcher = async (url) => {
@@ -168,19 +175,17 @@ export function MedicalRecords() {
             Kelola master data pasien dan log riwayat pemeriksaan optik
           </p>
         </div>
-        {activeTab === "pasien" && (
-          <Link
-            to="/rekam-medis/tambah-pasien"
-            className="btn btn-primary btn-sm rounded-xl font-semibold gap-1.5 shadow-sm w-full sm:w-auto"
-          >
-            <Plus className="w-4 h-4" /> Tambah Pasien
-          </Link>
-        )}
+        <Link
+          to="/rekam-medis/tambah-pasien"
+          className="btn btn-primary btn-sm rounded-xl font-semibold gap-1.5 shadow-sm w-full sm:w-auto"
+        >
+          <Plus className="w-4 h-4" /> Tambah Pasien
+        </Link>
       </div>
 
       {/* KARTU FILTER PANEL */}
       <div className="card bg-base-100 border border-base-300/60 shadow-sm p-4 rounded-2xl">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {/* Cari Nama */}
           <label className="input input-bordered input-sm flex items-center gap-2 bg-base-100 rounded-xl">
             <Search className="h-3.5 w-3.5 text-base-content/40" />
@@ -325,12 +330,13 @@ export function MedicalRecords() {
                       >
                         <FilePlus className="h-3 w-3" /> Periksa
                       </Link>
-                      <Link
-                        to={`/rekam-medis/${pt.id}`}
+
+                      <button
+                        onClick={() => setActivePatientId(pt.id)}
                         className="btn btn-outline btn-xs rounded-lg"
                       >
                         Detail
-                      </Link>
+                      </button>
                       {/* Tombol Edit dimasukkan ke Dropdown jika di mobile agar tidak sempit */}
                       <div className="dropdown dropdown-end dropdown-top">
                         <div
@@ -441,12 +447,12 @@ export function MedicalRecords() {
                           >
                             <FilePlus className="h-3 w-3" /> Periksa
                           </Link>
-                          <Link
-                            to={`/rekam-medis/${pt.id}`}
+                          <button
+                            onClick={() => setActivePatientId(pt.id)}
                             className="btn btn-outline btn-xs rounded-lg"
                           >
                             Detail
-                          </Link>
+                          </button>
 
                           {userRole === "admin" ? (
                             <div className="dropdown dropdown-end dropdown-top">
@@ -527,6 +533,14 @@ export function MedicalRecords() {
             </button>
           </div>
         </div>
+      )}
+
+      {/* Modal Medical Record Detail*/}
+      {activePatientId && (
+        <MedicalRecordDetailModal
+          patientId={activePatientId}
+          onClose={() => setActivePatientId(null)} // Reset ke null untuk menutup modal
+        />
       )}
     </div>
   );

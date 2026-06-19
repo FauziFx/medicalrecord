@@ -68,11 +68,16 @@ export function Warranties() {
   // State untuk menyimpan data item garansi yang sedang dipilih di Modal
   const [selectedWarranty, setSelectedWarranty] = useState(null);
 
+  const debouncedName = useDebounce(name, 500);
+  const debouncedOpticId = useDebounce(opticId, 300);
+  const debouncedStartDate = useDebounce(startDate, 500);
+  const debouncedEndDate = useDebounce(endDate, 500);
+
   const query = new URLSearchParams({ page, limit });
-  if (name) query.append("name", useDebounce(name));
-  if (opticId) query.append("opticId", useDebounce(opticId));
-  if (startDate) query.append("startDate", useDebounce(startDate));
-  if (endDate) query.append("endDate", useDebounce(endDate));
+  if (name) query.append("name", debouncedName);
+  if (opticId) query.append("opticId", debouncedOpticId);
+  if (startDate) query.append("startDate", debouncedStartDate);
+  if (endDate) query.append("endDate", debouncedEndDate);
 
   const fetcher = async (url) => {
     const response = await api.get(url);

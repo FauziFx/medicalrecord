@@ -101,6 +101,9 @@ export function MedicalRecordAdd() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (isLoadingSave) return;
+
     try {
       setIsLoadingSave(true);
 
@@ -641,6 +644,7 @@ export function MedicalRecordAdd() {
             to={prevPage}
             onClick={() => resetNewData()}
             className="btn btn-ghost btn-sm rounded-xl font-medium"
+            disabled={isLoadingSave}
           >
             Batal
           </Link>
@@ -650,7 +654,10 @@ export function MedicalRecordAdd() {
             disabled={isLoadingSave}
           >
             {isLoadingSave ? (
-              <span className="loading loading-sm loading-spinner"></span>
+              <>
+                <span className="loading loading-sm loading-spinner"></span>
+                Menyimpan...
+              </>
             ) : (
               <>
                 <Save className="h-4 w-4" /> Simpan Rekam Medis
