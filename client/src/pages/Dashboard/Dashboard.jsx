@@ -94,7 +94,7 @@ export function Dashboard() {
           </Link>
 
           <Link
-            to="/stocks"
+            to="/stok-lensa"
             className="btn btn-outline btn-sm rounded-xl font-medium gap-1.5 text-xs"
           >
             <Search className="h-4 w-4" /> Cek Stok

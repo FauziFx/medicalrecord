@@ -83,8 +83,8 @@ const routes = [
     roles: ["admin", "user"],
   },
   {
-    name: "Stock Lens",
-    path: "/stocks",
+    name: "Stok Lensa",
+    path: "/stok-lensa",
     icon: <PackageSearch className="h-4 w-4" />,
     component: Stock,
     showInMenu: true,
