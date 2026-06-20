@@ -5,10 +5,10 @@ import {
   Calendar,
   Info,
   X,
+  Wrench,
 } from "lucide-react";
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LoadingTable } from "@/components";
 import api from "@/utils/api";
 import useSWR from "swr";
 import dayjs from "dayjs";
@@ -17,9 +17,11 @@ import timezone from "dayjs/plugin/timezone";
 import { DateRange } from "react-date-range";
 import { format } from "date-fns";
 import { useDebounce } from "@/hooks/useDebounce";
+import { LoadingTable } from "@/components";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
+dayjs.locale("id");
 
 const formatNama = (str) => {
   if (!str) return "";
@@ -40,11 +42,7 @@ export function Warranties() {
   const location = useLocation();
 
   const [state, setState] = useState([
-    {
-      startDate: null,
-      endDate: null,
-      key: "selection",
-    },
+    { startDate: null, endDate: null, key: "selection" },
   ]);
 
   const handleDateChange = (item) => {
@@ -54,30 +52,25 @@ export function Warranties() {
   };
 
   const resetDate = () => {
-    setState([
-      {
-        startDate: null,
-        endDate: null,
-        key: "selection",
-      },
-    ]);
+    setState([{ startDate: null, endDate: null, key: "selection" }]);
     setStartDate(null);
     setEndDate(null);
   };
 
-  // State untuk menyimpan data item garansi yang sedang dipilih di Modal
+  // State Kontrol Modal
   const [selectedWarranty, setSelectedWarranty] = useState(null);
 
+  // Ambil state debounce di bagian paling atas (Sesuai Aturan Hooks)
   const debouncedName = useDebounce(name, 500);
   const debouncedOpticId = useDebounce(opticId, 300);
   const debouncedStartDate = useDebounce(startDate, 500);
   const debouncedEndDate = useDebounce(endDate, 500);
 
   const query = new URLSearchParams({ page, limit });
-  if (name) query.append("name", debouncedName);
-  if (opticId) query.append("opticId", debouncedOpticId);
-  if (startDate) query.append("startDate", debouncedStartDate);
-  if (endDate) query.append("endDate", debouncedEndDate);
+  if (debouncedName) query.append("name", debouncedName);
+  if (debouncedOpticId) query.append("opticId", debouncedOpticId);
+  if (debouncedStartDate) query.append("startDate", debouncedStartDate);
+  if (debouncedEndDate) query.append("endDate", debouncedEndDate);
 
   const fetcher = async (url) => {
     const response = await api.get(url);
@@ -90,9 +83,18 @@ export function Warranties() {
     };
   };
 
-  const { data, error, isLoading } = useSWR(
+  const { data, isLoading, error } = useSWR(
     `/warranty?${query.toString()}`,
     fetcher,
+  );
+
+  // FETCH DATA KLAIM GARANSI (Hanya jalan jika selectedWarranty.id terisi / Modal Terbuka)
+  const { data: claimsData, isLoading: isLoadingClaims } = useSWR(
+    selectedWarranty?.id ? `/warranty/${selectedWarranty.id}/claims` : null,
+    async (url) => {
+      const res = await api.get(url);
+      return res.data.data;
+    },
   );
 
   const checkStatusGaransi = (expireDate) => {
@@ -133,7 +135,10 @@ export function Warranties() {
               type="search"
               placeholder="Nama pasien..."
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value);
+                setPage(1);
+              }}
               className="grow text-xs"
             />
           </label>
@@ -142,7 +147,10 @@ export function Warranties() {
             <Store className="h-3.5 w-3.5 text-base-content/40" />
             <select
               value={opticId}
-              onChange={(e) => setOpticId(e.target.value)}
+              onChange={(e) => {
+                setOpticId(e.target.value);
+                setPage(1);
+              }}
               className="grow text-xs bg-transparent border-none outline-none focus:ring-0 p-0"
             >
               <option value="">Semua Cabang Toko</option>
@@ -165,10 +173,7 @@ export function Warranties() {
                 <Calendar className="h-3.5 w-3.5 text-base-content/40" />
                 {startDate === endDate || !startDate || !endDate
                   ? "Semua Tanggal"
-                  : `${format(new Date(startDate), "dd/MM/yyyy")} - ${format(
-                      new Date(endDate),
-                      "dd/MM/yyyy",
-                    )}`}
+                  : `${format(new Date(startDate), "dd/MM/yyyy")} - ${format(new Date(endDate), "dd/MM/yyyy")}`}
               </div>
               <ul
                 tabIndex="-1"
@@ -191,6 +196,7 @@ export function Warranties() {
                 onClick={(e) => {
                   e.stopPropagation();
                   resetDate();
+                  setPage(1);
                 }}
               >
                 x
@@ -244,7 +250,7 @@ export function Warranties() {
           )}
         </div>
 
-        {/* VIEW 2: LAYOUT DESKTOP (TAMPILAN RINGKAS & BERSIH) */}
+        {/* VIEW 2: LAYOUT DESKTOP */}
         <div className="hidden md:block overflow-hidden w-full">
           <table className="table table-sm w-full border-none table-fixed">
             <thead>
@@ -277,27 +283,22 @@ export function Warranties() {
                     </td>
                     <td className="text-center">
                       <div className="flex items-center justify-center gap-1">
-                        {/* TOMBOL KLAIM GARANSI */}
                         <Link
                           to="/kartu-garansi/klaim"
                           state={{
                             warrantyId: item.id,
                             prevPage: location.pathname,
                           }}
-                          className="btn btn-xs btn-primary rounded-lg tooltip"
-                          data-tip="Proses Klaim Garansi"
+                          className="btn btn-xs btn-primary rounded-lg gap-1"
                         >
-                          <ShieldCheckIcon className="h-4 w-4" />
+                          <ShieldCheckIcon className="h-3.5 w-3.5" />
                           Klaim
                         </Link>
-                        {/* TOMBOL MODAL DETAIL */}
                         <button
                           type="button"
                           onClick={() => openDetailModal(item)}
-                          className="btn btn-outline btn-xs rounded-lg tooltip"
-                          data-tip="Lihat Detail Resep & Garansi"
+                          className="btn btn-outline btn-xs rounded-lg"
                         >
-                          {" "}
                           Detail
                         </button>
                       </div>
@@ -312,7 +313,7 @@ export function Warranties() {
         </div>
       </div>
 
-      {/* PAGINASI GLOBAL */}
+      {/* PAGINASI */}
       {!isLoading && data && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-2 bg-base-100 p-3 rounded-2xl border border-base-300/60 shadow-3xs">
           <div className="text-xs text-base-content/50">
@@ -350,8 +351,12 @@ export function Warranties() {
         id="detail_warranty_modal"
         className="modal modal-bottom sm:modal-middle"
       >
-        {/* REVISI: Tambahkan max-h-[85vh] sm:max-h-none dan flex flex-col agar layout terbagi rata antara header, body, dan footer */}
-        <div className="modal-box p-0 max-w-lg rounded-t-2xl sm:rounded-2xl bg-base-100 border border-base-300/60 shadow-2xl overflow-hidden max-h-[85vh] sm:max-h-none flex flex-col">
+        {/* 
+          REVISI: 
+          1. Mengubah max-h-[85vh] sm:max-h-none MENJADI max-h-[90vh] sm:max-h-[85vh]
+          2. Mengunci border-radius rounded-2xl agar tetap melengkung rapi di desktop
+        */}
+        <div className="modal-box p-0 max-w-lg rounded-t-2xl sm:rounded-2xl bg-base-100 border border-base-300/60 shadow-2xl overflow-hidden max-h-[90vh] sm:max-h-[85vh] flex flex-col">
           {/* HEADER MODAL (Tetap terkunci di atas) */}
           <div className="bg-gradient-to-r from-primary/10 via-base-100 to-base-100 p-5 flex justify-between items-center border-b border-base-200 shrink-0">
             <div>
@@ -370,10 +375,14 @@ export function Warranties() {
             </form>
           </div>
 
-          {/* BADAN FISIK KARTU GARANSI */}
-          {/* REVISI: Tambahkan overflow-y-auto dan grow agar area ini saja yang bisa di-scroll ketika layar HP sempit */}
+          {/* BADAN FISIK KARTU GARANSI (DENGAN INTERNAL SCROLL ROLLBAR MODERN) */}
           {selectedWarranty && (
-            <div className="p-5 space-y-5 text-sm overflow-y-auto grow [scrollbar-width:thin]">
+            /* 
+              REVISI: 
+              Menghilangkan scrollbar default browser yang tebal dengan utility scrollbar-thin 
+              atau custom padding agar scroll di dalam kontainer terasa sangat mulus
+            */
+            <div className="p-5 space-y-5 text-sm overflow-y-auto grow select-none [scrollbar-width:thin] bg-base-100">
               {/* 1. INFORMASI CABANG & PELANGGAN */}
               <div className="grid grid-cols-2 gap-4 bg-base-200/30 p-3.5 rounded-xl border border-base-300/40">
                 <div className="space-y-0.5">
@@ -402,7 +411,7 @@ export function Warranties() {
                 </div>
               </div>
 
-              {/* 2. SPESIFIKASI PRODUK (FRAME & LENSA) */}
+              {/* 2. SPESIFIKASI PRODUK */}
               <div className="space-y-2">
                 <span className="text-[10px] font-extrabold text-base-content/40 uppercase tracking-wider block">
                   Item Yang Dijamin
@@ -492,14 +501,14 @@ export function Warranties() {
                 </div>
               </div>
 
-              {/* 4. MASA BERLAKU VALIDITAS GARANSI PRODUK */}
+              {/* 4. VALIDITAS GARANSI TOKO */}
               <div className="space-y-2 border-t border-base-200 pt-4">
                 <span className="text-[10px] font-extrabold text-base-content/40 uppercase tracking-wider block">
                   Validitas Garansi Toko
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {selectedWarranty.warranty_frame !== "-" ? (
-                    <div className="bg-base-100 border border-base-300/60 rounded-xl p-3 flex justify-between items-center shadow-2xs relative overflow-hidden">
+                    <div className="bg-base-100 border border-base-300/60 rounded-xl p-3 flex justify-between items-center shadow-2xs">
                       <div className="space-y-0.5">
                         <p className="font-bold text-xs text-base-content">
                           Garansi Frame
@@ -531,7 +540,7 @@ export function Warranties() {
                   )}
 
                   {selectedWarranty.warranty_lens !== "-" ? (
-                    <div className="bg-base-100 border border-base-300/60 rounded-xl p-3 flex justify-between items-center shadow-2xs relative overflow-hidden">
+                    <div className="bg-base-100 border border-base-300/60 rounded-xl p-3 flex justify-between items-center shadow-2xs">
                       <div className="space-y-0.5">
                         <p className="font-bold text-xs text-base-content">
                           Garansi Lensa
@@ -563,11 +572,67 @@ export function Warranties() {
                   )}
                 </div>
               </div>
+
+              {/* 5. SEKSI TIMELINE RIWAYAT KLAIM GARANSI */}
+              <div className="space-y-3 border-t border-base-200 pt-4">
+                <span className="text-[10px] font-extrabold text-base-content/40 uppercase tracking-wider block">
+                  Riwayat Klaim Garansi
+                </span>
+
+                {isLoadingClaims ? (
+                  <div className="py-2 text-center text-xs text-base-content/40">
+                    <span className="loading loading-spinner loading-xs"></span>{" "}
+                    Memuat riwayat...
+                  </div>
+                ) : claimsData && claimsData.length > 0 ? (
+                  <div className="space-y-3 pl-2">
+                    {claimsData.map((claim, cIdx) => (
+                      <div
+                        key={claim.id}
+                        className="relative pl-6 border-l-2 border-primary/40 pb-1"
+                      >
+                        <div className="absolute -left-[7px] top-0.5 bg-primary text-white rounded-full p-0.5 border-2 border-base-100">
+                          <Wrench className="h-2 w-2" />
+                        </div>
+
+                        <div className="bg-base-200/50 border border-base-300/40 p-3 rounded-xl space-y-1.5 shadow-3xs">
+                          <div className="flex justify-between items-center">
+                            <span className="badge badge-sm font-bold badge-neutral bg-base-300 text-base-content text-[10px] border-none px-2 rounded-md">
+                              {claim.warranty_type}
+                            </span>
+                            <span className="text-[10px] font-mono text-base-content/50 font-medium">
+                              {dayjs(claim.claim_date).format("DD-MM-YYYY")}
+                            </span>
+                          </div>
+                          <div className="text-[11px] space-y-0.5 text-base-content/80">
+                            <p>
+                              <span className="font-bold text-base-content/40">
+                                Kerusakan:
+                              </span>{" "}
+                              {claim.damage}
+                            </p>
+                            <p>
+                              <span className="font-bold text-base-content/40">
+                                Perbaikan:
+                              </span>{" "}
+                              {claim.repair}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-center py-4 bg-base-200/20 border border-dashed border-base-300 p-3 rounded-xl text-xs text-base-content/40 italic">
+                    Belum pernah melakukan klaim garansi pada produk ini.
+                  </p>
+                )}
+              </div>
             </div>
           )}
 
-          {/* PANEL ACTION DI BAWAH MODAL (Tetap terkunci di bawah) */}
-          <div className="modal-action m-0 p-4 bg-base-200/40 border-t border-base-200 flex gap-2 shrink-0">
+          {/* PANEL ACTION DI BAWAH MODAL (Tetap terkunci di bawah dengan bayangan pembatas) */}
+          <div className="modal-action m-0 p-4 bg-base-200/50 border-t border-base-200 flex gap-2 shrink-0 shadow-[0_-4px_12px_rgba(0,0,0,0.03)]">
             <form method="dialog" className="w-full grid grid-cols-2 gap-2">
               <button className="btn btn-sm btn-neutral rounded-xl font-bold">
                 Tutup Kartu
