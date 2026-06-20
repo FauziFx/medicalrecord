@@ -87,7 +87,7 @@ export function Dashboard() {
           </Link>
 
           <Link
-            to="/karti-garansi"
+            to="/kartu-garansi"
             className="btn btn-outline btn-primary btn-sm rounded-xl font-semibold gap-1.5 text-xs"
           >
             <IdCard className="h-4 w-4" /> Kartu Garansi
