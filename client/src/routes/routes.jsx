@@ -91,8 +91,8 @@ const routes = [
     roles: ["admin", "user"],
   },
   {
-    name: "Optics",
-    path: "/optics", // Halaman Add/Edit gabung di sini atau pakai parameter URL langsung
+    name: "Optik",
+    path: "/optik", // Halaman Add/Edit gabung di sini atau pakai parameter URL langsung
     icon: <Store className="h-4 w-4" />,
     component: Optic,
     showInMenu: true,
