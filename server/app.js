@@ -35,6 +35,7 @@ const retailRouter = require("./routes/retail.routes");
 
 const optic = require("./controllers/optic.controller");
 const stock = require("./controllers/stock.controller");
+const warranty = require("./controllers/warranty.controller");
 
 const app = express();
 
@@ -72,6 +73,9 @@ app.get("/v1/upload/image/:imageName", (req, res) => {
     readStream.pipe(res);
   });
 });
+
+// input via link
+app.get("/c", warranty.add);
 
 app.use("/v1/login", CheckInputs, loginRouter);
 app.use("/v1/warranty", CheckInputs, warrantyRouter);
