@@ -117,7 +117,7 @@ export function BottomNavigation() {
               <span>Stok Lensa</span>
             </Link>
             <Link
-              to="/optics"
+              to="/optik"
               onClick={() => setIsOpenMenu(false)}
               className="flex flex-col items-center gap-2 p-3 bg-base-200/40 rounded-2xl border border-base-300/30 hover:bg-base-200"
             >
