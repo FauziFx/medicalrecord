@@ -66,6 +66,34 @@ self.get = async (req, res, next) => {
   }
 };
 
+// Get by warranty
+self.getByWarranty = async (req, res, next) => {
+  try {
+    const { warrantyId } = req.params;
+
+    const data = await warrantyclaim.findAll({
+      attributes: [
+        "id",
+        "warrantyId",
+        "warranty_type",
+        "damage",
+        "repair",
+        "claim_date",
+      ],
+      where: { warrantyId: warrantyId },
+      order: [["id", "DESC"]], // Urutkan berdasarkan id terbaru
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Data Warranty Claim found",
+      data: data,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Create warranty
 self.create = async (req, res, next) => {
   const { warrantyId, warranty_type, damage, repair, claim_date } = req.body;
@@ -80,7 +108,7 @@ self.create = async (req, res, next) => {
       },
       {
         individualHooks: true,
-      }
+      },
     );
     res.status(201).json({
       success: true,

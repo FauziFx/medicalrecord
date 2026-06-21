@@ -84,7 +84,7 @@ app.use(Authenticate);
 app.use("/v1/optic", CheckInputs, opticRouter);
 app.use("/v1/patient", CheckInputs, patientRouter);
 app.use("/v1/medicalrecord", CheckInputs, medicalRecordRouter);
-app.use("/v1/user", CheckInputs, userRouter);
+app.use("/v1/user", userRouter);
 app.use("/v1/medicalcondition", medicalConditionRouter);
 app.use("/v1/dashboard", dashboardRouter);
 

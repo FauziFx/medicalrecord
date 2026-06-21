@@ -5,6 +5,7 @@ const router = require("express").Router();
 router.route("/").get(warranty.get).post(warranty.create);
 router.route("/claim").get(warrantyclaim.get).post(warrantyclaim.create);
 router.route("/claim/:id").delete(warrantyclaim.delete);
+router.route("/:warrantyId/claims").get(warrantyclaim.getByWarranty);
 router
   .route("/:id")
   .get(warranty.getById)

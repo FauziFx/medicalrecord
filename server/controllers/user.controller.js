@@ -68,9 +68,9 @@ self.create = async (req, res, next) => {
 self.update = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { name, email, password, role, opticId } = req.body;
+    const { name, email, password, role, opticId, status } = req.body;
 
-    // Check User
+    // 1. Periksa keberadaan Akun Pengguna
     const checkUser = await user.findByPk(id);
     if (!checkUser) {
       return res.status(400).json({
@@ -79,16 +79,21 @@ self.update = async (req, res, next) => {
       });
     }
 
-    // Update User
-    const passwordHash = password
-      ? bcrypt.hashSync(password, 10)
-      : checkUser.password;
+    // 2. Validasi Password Kosong yang Lebih Akurat
+    // Menggunakan .trim() untuk memastikan jika user hanya mengetik spasi tetap dianggap kosong
+    const passwordHash =
+      password && password.trim() !== ""
+        ? bcrypt.hashSync(password, 10)
+        : checkUser.password;
+
+    // 3. Eksekusi Pembaruan Data (Field 'status' dimasukkan ke sini)
     await checkUser.update({
       name: name,
       email: email,
       password: passwordHash,
       role: role,
-      opticId: opticId,
+      opticId: opticId || null, // Menangani jika All Store dikirim sebagai string kosong
+      status: status !== undefined ? Number(status) : checkUser.status, // Update status baru
     });
 
     res.status(200).json({
