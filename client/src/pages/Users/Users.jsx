@@ -47,7 +47,7 @@ export function Users() {
     "/optic?status=active",
     async (url) => {
       const res = await api.get(url);
-      return res.data.data;
+      return res.data;
     },
     { revalidateOnFocus: false },
   );
@@ -226,14 +226,14 @@ export function Users() {
                       <button
                         type="button"
                         onClick={() => handleOpenEdit(user)}
-                        className="btn btn-ghost btn-xs btn-square bg-base-200 text-success rounded-lg gap-1"
+                        className="btn btn-outline btn-xs btn-success bg-base-200 rounded-lg gap-1"
                       >
                         <Pencil className="h-3.5 w-3.5" /> Edit
                       </button>
                       <button
                         type="button"
                         onClick={() => handleDelete(user.id)}
-                        className="btn btn-ghost btn-xs btn-square bg-base-200 text-error rounded-lg gap-1"
+                        className="btn btn-outline btn-xs btn-error bg-base-200 rounded-lg gap-1"
                       >
                         <Trash2 className="h-3.5 w-3.5" /> Hapus
                       </button>
@@ -440,7 +440,7 @@ export function Users() {
                     className="grow text-xs bg-transparent border-none outline-none p-0"
                   >
                     <option value="">Semua Cabang Toko</option>
-                    {opticsList?.map((item) => (
+                    {opticsList?.data?.map((item) => (
                       <option key={item.id} value={item.id}>
                         {item.optic_name}
                       </option>
